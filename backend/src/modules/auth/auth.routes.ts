@@ -1,0 +1,24 @@
+import { Router } from "express";
+import { AuthController } from "./auth.controller";
+import { validateRequest } from "../../middlewares/validateRequest";
+import { authMiddleware } from "../../middlewares/authMiddleware";
+import { loginValidation, registerValidation } from "./auth.validation";
+
+const authRoutes = Router();
+const authController = new AuthController();
+
+authRoutes.post(
+  "/register",
+  validateRequest(registerValidation),
+  authController.register
+);
+
+authRoutes.post(
+  "/login",
+  validateRequest(loginValidation),
+  authController.login
+);
+
+authRoutes.get("/me", authMiddleware, authController.me);
+
+export { authRoutes };
