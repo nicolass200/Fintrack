@@ -1,0 +1,45 @@
+import { Router } from "express";
+import { authMiddleware } from "../../middlewares/authMiddleware";
+import { validateRequest } from "../../middlewares/validateRequest";
+import { transactionController } from "./transaction.controller";
+import {
+  createTransactionSchema,
+  deleteTransactionSchema,
+  getTransactionByIdSchema,
+  listTransactionsSchema,
+  updateTransactionSchema,
+} from "./transaction.validation";
+
+export const transactionRoutes = Router();
+
+transactionRoutes.use(authMiddleware);
+
+transactionRoutes.get(
+  "/",
+  validateRequest(listTransactionsSchema),
+  transactionController.list
+);
+
+transactionRoutes.post(
+  "/",
+  validateRequest(createTransactionSchema),
+  transactionController.create
+);
+
+transactionRoutes.get(
+  "/:id",
+  validateRequest(getTransactionByIdSchema),
+  transactionController.findById
+);
+
+transactionRoutes.put(
+  "/:id",
+  validateRequest(updateTransactionSchema),
+  transactionController.update
+);
+
+transactionRoutes.delete(
+  "/:id",
+  validateRequest(deleteTransactionSchema),
+  transactionController.delete
+);
