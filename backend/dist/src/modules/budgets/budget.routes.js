@@ -1,0 +1,12 @@
+import { Router } from "express";
+import { validateRequest } from "../../middlewares/validateRequest";
+import { authMiddleware } from "../../middlewares/authMiddleware";
+import { budgetController } from "./budget.controller";
+import { budgetAlertsSchema, createBudgetSchema, deleteBudgetSchema, updateBudgetSchema, } from "./budget.validation";
+export const budgetRoutes = Router();
+budgetRoutes.use(authMiddleware);
+budgetRoutes.get("/", budgetController.list);
+budgetRoutes.post("/", validateRequest(createBudgetSchema), budgetController.create);
+budgetRoutes.get("/alerts", validateRequest(budgetAlertsSchema), budgetController.alerts);
+budgetRoutes.put("/:id", validateRequest(updateBudgetSchema), budgetController.update);
+budgetRoutes.delete("/:id", validateRequest(deleteBudgetSchema), budgetController.delete);
