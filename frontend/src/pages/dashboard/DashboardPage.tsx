@@ -11,7 +11,7 @@ function formatCurrency(value: number) {
 }
 
 export function DashboardPage() {
-  const { user, token, logout } = useAuth();
+  const { user, token } = useAuth();
 
   const [summary, setSummary] = useState<DashboardSummary | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -65,10 +65,6 @@ export function DashboardPage() {
           <h1>Dashboard</h1>
           <p>Bem-vindo, {user?.name}.</p>
         </div>
-
-        <button type="button" className="secondary-button" onClick={logout}>
-          Sair
-        </button>
       </header>
 
       {isLoading && (

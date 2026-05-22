@@ -3,10 +3,11 @@ import "./App.css";
 import { LoginPage } from "./pages/auth/LoginPage";
 import { RegisterPage } from "./pages/auth/RegisterPage";
 import { DashboardPage } from "./pages/dashboard/DashboardPage";
-import { PrivateRoute } from "./routes/PrivateRoute";
 import { CategoriesPage } from "./pages/categories/CategoriesPage";
 import { TransactionsPage } from "./pages/transactions/TransactionsPage";
-
+import { BudgetsPage } from "./pages/budgets/BudgetsPage";
+import { PrivateRoute } from "./routes/PrivateRoute";
+import { AppLayout } from "./layouts/AppLayout";
 
 function App() {
   return (
@@ -19,29 +20,18 @@ function App() {
         <Route path="/register" element={<RegisterPage />} />
 
         <Route
-          path="/dashboard"
           element={
             <PrivateRoute>
-              <DashboardPage />
+              <AppLayout />
             </PrivateRoute>
           }
-        />
-        <Route
-          path="/categories"
-          element={
-          <PrivateRoute>
-          <CategoriesPage />
-          </PrivateRoute>
-          }
-        />
-        <Route
-          path="/transactions"
-          element={
-            <PrivateRoute>
-              <TransactionsPage />
-            </PrivateRoute>
-          }
-        />
+        >
+          <Route path="/dashboard" element={<DashboardPage />} />
+          <Route path="/categories" element={<CategoriesPage />} />
+          <Route path="/transactions" element={<TransactionsPage />} />
+          <Route path="/budgets" element={<BudgetsPage />} />
+        </Route>
+
         <Route path="*" element={<Navigate to="/dashboard" replace />} />
       </Routes>
     </BrowserRouter>
