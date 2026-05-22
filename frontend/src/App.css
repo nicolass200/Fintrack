@@ -337,3 +337,81 @@
     flex: 1;
   }
 }
+
+.filter-form {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.filter-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  color: #374151;
+  font-weight: 600;
+}
+
+.filter-form input,
+.filter-form select {
+  height: 44px;
+  padding: 0 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 10px;
+  background: #ffffff;
+  font-size: 1rem;
+}
+
+.filter-actions {
+  display: flex;
+  grid-column: 1 / -1;
+  gap: 12px;
+}
+
+.filter-actions button {
+  flex: 1;
+  height: 44px;
+  border: none;
+  border-radius: 10px;
+  background: #15803d;
+  color: #ffffff;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.filter-actions .outline-button {
+  border: 1px solid #15803d;
+  background: #ffffff;
+  color: #15803d;
+}
+
+.page-section {
+  max-width: 1100px;
+  margin: 24px auto 0;
+}
+
+.transaction-actions {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.income-value {
+  color: #15803d;
+}
+
+.expense-value {
+  color: #b91c1c;
+}
+
+@media (max-width: 900px) {
+  .filter-form {
+    grid-template-columns: 1fr;
+  }
+
+  .transaction-actions {
+    width: 100%;
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}

@@ -5,7 +5,7 @@ import { RegisterPage } from "./pages/auth/RegisterPage";
 import { DashboardPage } from "./pages/dashboard/DashboardPage";
 import { PrivateRoute } from "./routes/PrivateRoute";
 import { CategoriesPage } from "./pages/categories/CategoriesPage";
-
+import { TransactionsPage } from "./pages/transactions/TransactionsPage";
 
 
 function App() {
@@ -32,6 +32,14 @@ function App() {
           <PrivateRoute>
           <CategoriesPage />
           </PrivateRoute>
+          }
+        />
+        <Route
+          path="/transactions"
+          element={
+            <PrivateRoute>
+              <TransactionsPage />
+            </PrivateRoute>
           }
         />
         <Route path="*" element={<Navigate to="/dashboard" replace />} />
