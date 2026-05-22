@@ -15,7 +15,11 @@ interface UpdateCategoryData {
 }
 
 export class CategoryRepository {
-  async findByNameTypeAndUser(name: string, type: TransactionType, userId: string) {
+  async findByNameTypeAndUser(
+    name: string,
+    type: TransactionType,
+    userId: string
+  ) {
     return prisma.category.findUnique({
       where: {
         name_type_userId: {
@@ -61,6 +65,15 @@ export class CategoryRepository {
       data: {
         name: data.name,
         type: data.type,
+      },
+    });
+  }
+
+  async countTransactionsByCategoryId(categoryId: string, userId: string) {
+    return prisma.transaction.count({
+      where: {
+        categoryId,
+        userId,
       },
     });
   }

@@ -4,6 +4,9 @@ import { LoginPage } from "./pages/auth/LoginPage";
 import { RegisterPage } from "./pages/auth/RegisterPage";
 import { DashboardPage } from "./pages/dashboard/DashboardPage";
 import { PrivateRoute } from "./routes/PrivateRoute";
+import { CategoriesPage } from "./pages/categories/CategoriesPage";
+
+
 
 function App() {
   return (
@@ -23,7 +26,14 @@ function App() {
             </PrivateRoute>
           }
         />
-
+        <Route
+          path="/categories"
+          element={
+          <PrivateRoute>
+          <CategoriesPage />
+          </PrivateRoute>
+          }
+        />
         <Route path="*" element={<Navigate to="/dashboard" replace />} />
       </Routes>
     </BrowserRouter>

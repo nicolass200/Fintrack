@@ -71,6 +71,16 @@ export class CategoryService {
       throw new AppError("Categoria não encontrada", 404);
     }
 
+    const transactionsCount =
+      await this.categoryRepository.countTransactionsByCategoryId(id, userId);
+
+    if (transactionsCount > 0) {
+      throw new AppError(
+        "Não é possível excluir uma categoria que possui transações cadastradas",
+        400
+      );
+    }
+
     return this.categoryRepository.delete(id);
   }
 }
