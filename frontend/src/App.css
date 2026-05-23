@@ -654,7 +654,85 @@ body {
     flex-direction: column;
   }
 }
+.alert-card {
+  margin-top: 20px;
+  padding: 20px;
+  border: 1px solid #d1d5db;
+  border-radius: 16px;
+  background: #f9fafb;
+}
 
+.alert-card > span {
+  display: inline-flex;
+  margin-bottom: 8px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 800;
+}
+
+.alert-card > strong {
+  display: block;
+  color: #111827;
+  font-size: 1.5rem;
+}
+
+.alert-card p {
+  color: #4b5563;
+}
+
+.alert-ok > span {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.alert-near_limit > span {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.alert-exceeded > span {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.alert-no_budget > span {
+  background: #e5e7eb;
+  color: #374151;
+}
+
+.alert-values {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  padding: 0;
+  margin: 18px 0 0;
+  list-style: none;
+}
+
+.alert-values li {
+  padding: 14px;
+  border-radius: 12px;
+  background: #ffffff;
+}
+
+.alert-values span {
+  display: block;
+  margin-bottom: 6px;
+  color: #6b7280;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.alert-values strong {
+  color: #111827;
+}
+
+@media (max-width: 560px) {
+  .alert-values {
+    grid-template-columns: 1fr;
+  }
+}
 @media (max-width: 560px) {
   .auth-page {
     padding: 16px;
