@@ -1,5 +1,6 @@
 import { TransactionType } from "@prisma/client";
 import { AppError } from "../../utils/AppError";
+import { defaultCategories } from "./defaultCategories";
 import { CategoryRepository } from "./category.repository";
 
 interface CreateCategoryRequest {
@@ -24,21 +25,37 @@ export class CategoryService {
   private categoryRepository = new CategoryRepository();
 
   async create({ name, type, userId }: CreateCategoryRequest) {
+    const normalizedName = name.trim();
     const categoryAlreadyExists =
-      await this.categoryRepository.findByNameTypeAndUser(name, type, userId);
+      await this.categoryRepository.findByNameTypeAndUser(
+        normalizedName,
+        type,
+        userId
+      );
 
     if (categoryAlreadyExists) {
       throw new AppError("Categoria já existe para este tipo", 409);
     }
 
     return this.categoryRepository.create({
-      name,
+      name: normalizedName,
       type,
       userId,
     });
   }
 
+  async createDefaultCategoriesForUser(userId: string) {
+    return this.categoryRepository.createMany(
+      defaultCategories.map((category) => ({
+        ...category,
+        userId,
+      }))
+    );
+  }
+
   async list(userId: string) {
+    await this.createDefaultCategoriesForUser(userId);
+
     return this.categoryRepository.listByUser(userId);
   }
 

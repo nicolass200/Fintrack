@@ -7,6 +7,8 @@ interface CreateCategoryData {
   userId: string;
 }
 
+type CreateManyCategoryData = CreateCategoryData[];
+
 interface UpdateCategoryData {
   id: string;
   name: string;
@@ -43,6 +45,13 @@ export class CategoryRepository {
   async create(data: CreateCategoryData) {
     return prisma.category.create({
       data,
+    });
+  }
+
+  async createMany(data: CreateManyCategoryData) {
+    return prisma.category.createMany({
+      data,
+      skipDuplicates: true,
     });
   }
 

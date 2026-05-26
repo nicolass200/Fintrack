@@ -2,6 +2,7 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { prisma } from "../../config/prisma";
 import { AppError } from "../../utils/AppError";
+import { CategoryService } from "../categories/category.service";
 
 interface RegisterRequest {
   name: string;
@@ -27,6 +28,8 @@ function generateToken(userId: string) {
 }
 
 export class AuthService {
+  private categoryService = new CategoryService();
+
   async register({ name, email, password }: RegisterRequest) {
     const userAlreadyExists = await prisma.user.findUnique({
       where: { email },
@@ -51,6 +54,8 @@ export class AuthService {
         createdAt: true,
       },
     });
+
+    await this.categoryService.createDefaultCategoriesForUser(user.id);
 
     const token = generateToken(user.id);
 
