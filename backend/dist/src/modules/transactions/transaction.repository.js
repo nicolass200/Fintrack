@@ -13,6 +13,8 @@ export const transactionRepository = {
             userId: filters.userId,
             ...(filters.type && { type: filters.type }),
             ...(filters.categoryId && { categoryId: filters.categoryId }),
+            ...(filters.isSettled !== undefined && { isSettled: filters.isSettled }),
+            ...(filters.paymentMethod && { paymentMethod: filters.paymentMethod }),
             ...(filters.startDate &&
                 filters.endDate && {
                 date: {

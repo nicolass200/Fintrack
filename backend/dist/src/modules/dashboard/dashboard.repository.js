@@ -18,6 +18,10 @@ export const dashboardRepository = {
                 amount: true,
                 type: true,
                 date: true,
+                paymentMethod: true,
+                account: true,
+                isSettled: true,
+                createdAt: true,
                 categoryId: true,
                 category: {
                     select: {

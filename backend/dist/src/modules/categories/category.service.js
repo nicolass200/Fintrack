@@ -1,19 +1,28 @@
 import { AppError } from "../../utils/AppError";
+import { defaultCategories } from "./defaultCategories";
 import { CategoryRepository } from "./category.repository";
 export class CategoryService {
     categoryRepository = new CategoryRepository();
     async create({ name, type, userId }) {
-        const categoryAlreadyExists = await this.categoryRepository.findByNameTypeAndUser(name, type, userId);
+        const normalizedName = name.trim();
+        const categoryAlreadyExists = await this.categoryRepository.findByNameTypeAndUser(normalizedName, type, userId);
         if (categoryAlreadyExists) {
             throw new AppError("Categoria já existe para este tipo", 409);
         }
         return this.categoryRepository.create({
-            name,
+            name: normalizedName,
             type,
             userId,
         });
     }
+    async createDefaultCategoriesForUser(userId) {
+        return this.categoryRepository.createMany(defaultCategories.map((category) => ({
+            ...category,
+            userId,
+        })));
+    }
     async list(userId) {
+        await this.createDefaultCategoriesForUser(userId);
         return this.categoryRepository.listByUser(userId);
     }
     async update({ id, name, type, userId }) {
@@ -36,6 +45,10 @@ export class CategoryService {
         const category = await this.categoryRepository.findByIdAndUser(id, userId);
         if (!category) {
             throw new AppError("Categoria não encontrada", 404);
+        }
+        const transactionsCount = await this.categoryRepository.countTransactionsByCategoryId(id, userId);
+        if (transactionsCount > 0) {
+            throw new AppError("Não é possível excluir uma categoria que possui transações cadastradas", 400);
         }
         return this.categoryRepository.delete(id);
     }

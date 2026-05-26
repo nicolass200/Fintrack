@@ -20,6 +20,9 @@ async function validateCategory(categoryId, userId, type) {
     }
     return category;
 }
+function normalizeOptionalText(value) {
+    return value?.trim() || null;
+}
 export const transactionService = {
     async create(data) {
         await validateCategory(data.categoryId, data.userId, data.type);
@@ -28,6 +31,9 @@ export const transactionService = {
             amount: data.amount,
             type: data.type,
             date: new Date(data.date),
+            paymentMethod: normalizeOptionalText(data.paymentMethod),
+            account: normalizeOptionalText(data.account),
+            isSettled: data.isSettled,
             categoryId: data.categoryId,
             userId: data.userId,
         });
@@ -38,6 +44,8 @@ export const transactionService = {
             userId,
             type: query.type,
             categoryId: query.categoryId,
+            isSettled: query.isSettled,
+            paymentMethod: normalizeOptionalText(query.paymentMethod) ?? undefined,
             startDate,
             endDate,
         });
@@ -64,6 +72,11 @@ export const transactionService = {
             amount: data.amount,
             type: data.type,
             date: data.date ? new Date(data.date) : undefined,
+            paymentMethod: data.paymentMethod !== undefined
+                ? normalizeOptionalText(data.paymentMethod)
+                : undefined,
+            account: data.account !== undefined ? normalizeOptionalText(data.account) : undefined,
+            isSettled: data.isSettled,
             categoryId: data.categoryId,
         });
     },

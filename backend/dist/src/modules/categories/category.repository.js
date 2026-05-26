@@ -24,6 +24,12 @@ export class CategoryRepository {
             data,
         });
     }
+    async createMany(data) {
+        return prisma.category.createMany({
+            data,
+            skipDuplicates: true,
+        });
+    }
     async listByUser(userId) {
         return prisma.category.findMany({
             where: {
@@ -42,6 +48,14 @@ export class CategoryRepository {
             data: {
                 name: data.name,
                 type: data.type,
+            },
+        });
+    }
+    async countTransactionsByCategoryId(categoryId, userId) {
+        return prisma.transaction.count({
+            where: {
+                categoryId,
+                userId,
             },
         });
     }
