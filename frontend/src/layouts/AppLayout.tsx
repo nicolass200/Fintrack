@@ -1,6 +1,14 @@
 import { NavLink, Outlet } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 
+const navigationItems = [
+  { to: "/dashboard", label: "Inicio", icon: "In", end: false },
+  { to: "/transactions", label: "Extrato", icon: "Ex", end: true },
+  { to: "/transactions/new", label: "Adicionar", icon: "+", end: false },
+  { to: "/budgets", label: "Orcamentos", icon: "$", end: false },
+  { to: "/profile", label: "Perfil", icon: "Eu", end: false },
+];
+
 export function AppLayout() {
   const { user, logout } = useAuth();
 
@@ -13,10 +21,11 @@ export function AppLayout() {
         </div>
 
         <nav className="app-nav">
-          <NavLink to="/dashboard">Dashboard</NavLink>
-          <NavLink to="/categories">Categorias</NavLink>
-          <NavLink to="/transactions">Transações</NavLink>
-          <NavLink to="/budgets">Orçamentos</NavLink>
+          {navigationItems.map((item) => (
+            <NavLink key={item.to} to={item.to} end={item.end}>
+              {item.label}
+            </NavLink>
+          ))}
         </nav>
 
         <button type="button" className="logout-button" onClick={logout}>
@@ -27,6 +36,21 @@ export function AppLayout() {
       <div className="app-content">
         <Outlet />
       </div>
+
+      <nav className="bottom-nav" aria-label="Navegacao principal">
+        {navigationItems.map((item) => (
+          <NavLink
+            key={item.to}
+            to={item.to}
+            end={item.end}
+            className={item.to === "/transactions/new" ? "bottom-nav-add" : ""}
+            aria-label={item.label}
+          >
+            <span>{item.icon}</span>
+            <small>{item.label}</small>
+          </NavLink>
+        ))}
+      </nav>
     </div>
   );
 }
