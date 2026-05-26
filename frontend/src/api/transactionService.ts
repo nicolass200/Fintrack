@@ -25,6 +25,14 @@ function buildTransactionQuery(filters: TransactionFilters) {
     params.append("categoryId", filters.categoryId);
   }
 
+  if (filters.isSettled) {
+    params.append("isSettled", filters.isSettled);
+  }
+
+  if (filters.paymentMethod) {
+    params.append("paymentMethod", filters.paymentMethod);
+  }
+
   const query = params.toString();
 
   return query ? `?${query}` : "";

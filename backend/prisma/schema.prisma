@@ -36,15 +36,18 @@ model Category {
 }
 
 model Transaction {
-  id          String          @id @default(uuid())
-  description String
-  amount      Decimal         @db.Decimal(10, 2)
-  type        TransactionType
-  date        DateTime
-  userId      String
-  categoryId  String
-  createdAt   DateTime        @default(now())
-  updatedAt   DateTime        @updatedAt
+  id            String          @id @default(uuid())
+  description   String
+  amount        Decimal         @db.Decimal(10, 2)
+  type          TransactionType
+  date          DateTime
+  paymentMethod String?
+  account       String?
+  isSettled     Boolean         @default(true)
+  userId        String
+  categoryId    String
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
 
   user     User     @relation(fields: [userId], references: [id])
   category Category @relation(fields: [categoryId], references: [id])

@@ -6,6 +6,9 @@ export type Transaction = {
   amount: number | string;
   type: CategoryType;
   date: string;
+  paymentMethod: string | null;
+  account: string | null;
+  isSettled: boolean;
   userId: string;
   categoryId: string;
   createdAt: string;
@@ -19,6 +22,9 @@ export type CreateTransactionData = {
   type: CategoryType;
   date: string;
   categoryId: string;
+  paymentMethod?: string | null;
+  account?: string | null;
+  isSettled?: boolean;
 };
 
 export type UpdateTransactionData = {
@@ -27,6 +33,9 @@ export type UpdateTransactionData = {
   type?: CategoryType;
   date?: string;
   categoryId?: string;
+  paymentMethod?: string | null;
+  account?: string | null;
+  isSettled?: boolean;
 };
 
 export type TransactionFilters = {
@@ -34,4 +43,6 @@ export type TransactionFilters = {
   year?: string;
   type?: CategoryType | "";
   categoryId?: string;
+  isSettled?: "" | "true" | "false";
+  paymentMethod?: string;
 };

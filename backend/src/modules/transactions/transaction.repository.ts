@@ -1,4 +1,4 @@
-import { TransactionType } from "@prisma/client";
+import { Prisma, TransactionType } from "@prisma/client";
 import { prisma } from "../../config/prisma";
 
 type CreateTransactionData = {
@@ -6,6 +6,9 @@ type CreateTransactionData = {
   amount: number;
   type: TransactionType;
   date: Date;
+  paymentMethod?: string | null;
+  account?: string | null;
+  isSettled?: boolean;
   categoryId: string;
   userId: string;
 };
@@ -15,6 +18,9 @@ type UpdateTransactionData = {
   amount?: number;
   type?: TransactionType;
   date?: Date;
+  paymentMethod?: string | null;
+  account?: string | null;
+  isSettled?: boolean;
   categoryId?: string;
 };
 
@@ -22,6 +28,8 @@ type FindManyFilters = {
   userId: string;
   type?: TransactionType;
   categoryId?: string;
+  isSettled?: boolean;
+  paymentMethod?: string;
   startDate?: Date;
   endDate?: Date;
 };
@@ -37,10 +45,12 @@ export const transactionRepository = {
   },
 
   async findMany(filters: FindManyFilters) {
-    const where = {
+    const where: Prisma.TransactionWhereInput = {
       userId: filters.userId,
       ...(filters.type && { type: filters.type }),
       ...(filters.categoryId && { categoryId: filters.categoryId }),
+      ...(filters.isSettled !== undefined && { isSettled: filters.isSettled }),
+      ...(filters.paymentMethod && { paymentMethod: filters.paymentMethod }),
       ...(filters.startDate &&
         filters.endDate && {
           date: {
