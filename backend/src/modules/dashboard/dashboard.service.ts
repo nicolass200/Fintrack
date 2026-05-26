@@ -36,6 +36,8 @@ export const dashboardService = {
 
     let totalIncome = 0;
     let totalExpense = 0;
+    let pendingIncome = 0;
+    let pendingExpense = 0;
 
     const expensesByCategoryMap = new Map<
       string,
@@ -83,11 +85,19 @@ export const dashboardService = {
       if (transaction.type === "INCOME") {
         totalIncome += amount;
         monthlySummary.income += amount;
+
+        if (!transaction.isSettled) {
+          pendingIncome += amount;
+        }
       }
 
       if (transaction.type === "EXPENSE") {
         totalExpense += amount;
         monthlySummary.expense += amount;
+
+        if (!transaction.isSettled) {
+          pendingExpense += amount;
+        }
 
         const categoryId = transaction.category.id;
 
@@ -123,12 +133,31 @@ export const dashboardService = {
       return a.month - b.month;
     });
 
+    const latestTransactions = transactions.slice(0, 5).map((transaction) => ({
+      id: transaction.id,
+      description: transaction.description,
+      amount: toNumber(transaction.amount),
+      type: transaction.type,
+      date: transaction.date,
+      paymentMethod: transaction.paymentMethod,
+      account: transaction.account,
+      isSettled: transaction.isSettled,
+      category: {
+        id: transaction.category.id,
+        name: transaction.category.name,
+        type: transaction.category.type,
+      },
+    }));
+
     return {
       totalIncome,
       totalExpense,
       balance,
+      pendingIncome,
+      pendingExpense,
       expensesByCategory,
       monthlySummary,
+      latestTransactions,
     };
   },
 };
