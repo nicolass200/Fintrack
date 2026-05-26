@@ -19,12 +19,31 @@ function formatDate(value: string) {
   }).format(new Date(value));
 }
 
-function getDateInputValue(value: string) {
-  return value.slice(0, 10);
+const paymentMethodOptions = [
+  "Pix",
+  "Dinheiro",
+  "Cartao de debito",
+  "Cartao de credito",
+  "Boleto",
+  "Transferencia",
+  "Outro",
+];
+
+type TransactionsPageProps = {
+  mode?: "statement" | "form";
+};
+
+function getSettlementLabel(transaction: Transaction) {
+  if (transaction.type === "INCOME") {
+    return transaction.isSettled ? "Recebido" : "Nao recebido";
+  }
+
+  return transaction.isSettled ? "Pago" : "Nao pago";
 }
 
-export function TransactionsPage() {
+export function TransactionsPage({ mode = "statement" }: TransactionsPageProps) {
   const { token } = useAuth();
+  const isFormMode = mode === "form";
 
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -34,6 +53,11 @@ export function TransactionsPage() {
   const [type, setType] = useState<CategoryType>("EXPENSE");
   const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10));
   const [categoryId, setCategoryId] = useState("");
+  const [paymentMethod, setPaymentMethod] = useState("");
+  const [account, setAccount] = useState("");
+  const [isSettled, setIsSettled] = useState(true);
+  const [newCategoryName, setNewCategoryName] = useState("");
+  const [isCreatingCategory, setIsCreatingCategory] = useState(false);
   const [editingTransaction, setEditingTransaction] =
     useState<Transaction | null>(null);
 
@@ -42,6 +66,8 @@ export function TransactionsPage() {
     year: "",
     type: "",
     categoryId: "",
+    isSettled: "",
+    paymentMethod: "",
   });
 
   const [isLoading, setIsLoading] = useState(true);
@@ -134,7 +160,19 @@ export function TransactionsPage() {
     setType("EXPENSE");
     setDate(new Date().toISOString().slice(0, 10));
     setCategoryId("");
+    setPaymentMethod("");
+    setAccount("");
+    setIsSettled(true);
     setEditingTransaction(null);
+  }
+
+  function selectTransactionType(nextType: CategoryType) {
+    setType(nextType);
+    setCategoryId("");
+    setNewCategoryName("");
+    setPaymentMethod("");
+    setAccount("");
+    setIsSettled(true);
   }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -154,6 +192,9 @@ export function TransactionsPage() {
         type,
         date,
         categoryId,
+        paymentMethod: type === "EXPENSE" ? paymentMethod || null : null,
+        account: type === "INCOME" ? account || null : null,
+        isSettled,
       };
 
       if (editingTransaction) {
@@ -172,13 +213,31 @@ export function TransactionsPage() {
     }
   }
 
-  function handleEdit(transaction: Transaction) {
-    setEditingTransaction(transaction);
-    setDescription(transaction.description);
-    setAmount(String(transaction.amount));
-    setType(transaction.type);
-    setDate(getDateInputValue(transaction.date));
-    setCategoryId(transaction.categoryId);
+  async function handleCreateCategory() {
+    if (!token || !newCategoryName.trim()) {
+      return;
+    }
+
+    setIsCreatingCategory(true);
+    setError("");
+
+    try {
+      const category = await categoryService.create(token, {
+        name: newCategoryName.trim(),
+        type,
+      });
+      const data = await categoryService.list(token);
+
+      setCategories(data);
+      setCategoryId(category.id);
+      setNewCategoryName("");
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Erro ao criar categoria"
+      );
+    } finally {
+      setIsCreatingCategory(false);
+    }
   }
 
   async function handleDelete(transactionId: string) {
@@ -213,6 +272,8 @@ export function TransactionsPage() {
     year: "",
     type: "",
     categoryId: "",
+    isSettled: "",
+    paymentMethod: "",
   };
 
   setFilters(emptyFilters);
@@ -224,16 +285,45 @@ export function TransactionsPage() {
       <header className="dashboard-header">
         <div>
           <span className="app-badge">FinTrack</span>
-          <h1>Transações</h1>
-          <p>Registre receitas e despesas com data e categoria.</p>
+          <h1>{isFormMode ? "Adicionar" : "Extrato"}</h1>
+          <p>
+            {isFormMode
+              ? "Cadastre um novo gasto ou ganho."
+              : "Acompanhe seus gastos, ganhos e pendencias financeiras."}
+          </p>
         </div>
       </header>
 
-      <section className="content-grid">
+      {isFormMode ? (
+      <section className="form-page-grid">
         <article className="dashboard-panel">
-          <h2>{editingTransaction ? "Editar transação" : "Nova transação"}</h2>
+          <h2>
+            {editingTransaction
+              ? "Editar lancamento"
+              : type === "EXPENSE"
+                ? "Novo gasto"
+                : "Novo ganho"}
+          </h2>
 
           <form className="auth-form" onSubmit={handleSubmit}>
+            <div className="mode-selector" aria-label="Tipo de lancamento">
+              <button
+                type="button"
+                className={type === "EXPENSE" ? "active" : ""}
+                onClick={() => selectTransactionType("EXPENSE")}
+              >
+                Gasto
+              </button>
+
+              <button
+                type="button"
+                className={type === "INCOME" ? "active" : ""}
+                onClick={() => selectTransactionType("INCOME")}
+              >
+                Ganho
+              </button>
+            </div>
+
             <label>
               Descrição
               <input
@@ -256,21 +346,6 @@ export function TransactionsPage() {
                 onChange={(event) => setAmount(event.target.value)}
                 required
               />
-            </label>
-
-            <label>
-              Tipo
-              <select
-                value={type}
-                onChange={(event) => {
-                  setType(event.target.value as CategoryType);
-                  setCategoryId("");
-                }}
-                required
-              >
-                <option value="EXPENSE">Despesa</option>
-                <option value="INCOME">Receita</option>
-              </select>
             </label>
 
             <label>
@@ -300,6 +375,68 @@ export function TransactionsPage() {
               </select>
             </label>
 
+            <div className="inline-category-form">
+              <label>
+                Nova categoria
+                <input
+                  type="text"
+                  placeholder={
+                    type === "EXPENSE" ? "Ex: Mercado" : "Ex: Bonus"
+                  }
+                  value={newCategoryName}
+                  onChange={(event) => setNewCategoryName(event.target.value)}
+                />
+              </label>
+
+              <button
+                type="button"
+                className="outline-button"
+                disabled={isCreatingCategory || !newCategoryName.trim()}
+                onClick={handleCreateCategory}
+              >
+                {isCreatingCategory ? "Criando..." : "+ Nova categoria"}
+              </button>
+            </div>
+
+            {type === "EXPENSE" && (
+              <label>
+                Forma de pagamento
+                <select
+                  value={paymentMethod}
+                  onChange={(event) => setPaymentMethod(event.target.value)}
+                >
+                  <option value="">Nao informado</option>
+
+                  {paymentMethodOptions.map((option) => (
+                    <option key={option} value={option}>
+                      {option}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            )}
+
+            {type === "INCOME" && (
+              <label>
+                Conta onde recebeu
+                <input
+                  type="text"
+                  placeholder="Ex: Nubank"
+                  value={account}
+                  onChange={(event) => setAccount(event.target.value)}
+                />
+              </label>
+            )}
+
+            <label className="checkbox-label">
+              <input
+                type="checkbox"
+                checked={isSettled}
+                onChange={(event) => setIsSettled(event.target.checked)}
+              />
+              {type === "EXPENSE" ? "Ja paguei" : "Ja recebi"}
+            </label>
+
             {error && <p className="form-error">{error}</p>}
 
             <button type="submit" disabled={isSubmitting}>
@@ -321,7 +458,10 @@ export function TransactionsPage() {
             )}
           </form>
         </article>
-
+      </section>
+      ) : (
+      <>
+      <section className="content-grid statement-grid">
         <article className="dashboard-panel">
           <h2>Filtros</h2>
 
@@ -360,7 +500,7 @@ export function TransactionsPage() {
             </label>
 
             <label>
-              Tipo
+              Movimento
               <select
                 value={filters.type}
                 onChange={(event) =>
@@ -371,8 +511,8 @@ export function TransactionsPage() {
                 }
               >
                 <option value="">Todos</option>
-                <option value="EXPENSE">Despesa</option>
-                <option value="INCOME">Receita</option>
+                <option value="EXPENSE">Gastos</option>
+                <option value="INCOME">Ganhos</option>
               </select>
             </label>
 
@@ -397,6 +537,44 @@ export function TransactionsPage() {
               </select>
             </label>
 
+            <label>
+              Status
+              <select
+                value={filters.isSettled}
+                onChange={(event) =>
+                  setFilters((current) => ({
+                    ...current,
+                    isSettled: event.target.value as "" | "true" | "false",
+                  }))
+                }
+              >
+                <option value="">Todos</option>
+                <option value="true">Pagos/recebidos</option>
+                <option value="false">Pendentes</option>
+              </select>
+            </label>
+
+            <label>
+              Forma de pagamento
+              <select
+                value={filters.paymentMethod}
+                onChange={(event) =>
+                  setFilters((current) => ({
+                    ...current,
+                    paymentMethod: event.target.value,
+                  }))
+                }
+              >
+                <option value="">Todas</option>
+
+                {paymentMethodOptions.map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </select>
+            </label>
+
             <div className="filter-actions">
               <button type="submit">Aplicar filtros</button>
               <button
@@ -412,12 +590,12 @@ export function TransactionsPage() {
       </section>
 
       <section className="dashboard-panel page-section">
-        <h2>Transações cadastradas</h2>
+        <h2>Movimentacoes</h2>
 
         {isLoading ? (
-          <p>Carregando transações...</p>
+          <p>Carregando extrato...</p>
         ) : transactions.length === 0 ? (
-          <p>Nenhuma transação cadastrada ainda.</p>
+          <p>Nenhuma movimentacao encontrada.</p>
         ) : (
           <ul className="data-list">
             {transactions.map((transaction) => (
@@ -425,8 +603,30 @@ export function TransactionsPage() {
                 <div>
                   <strong>{transaction.description}</strong>
                   <span>
-                    {transaction.type === "INCOME" ? "Receita" : "Despesa"} •{" "}
+                    <span
+                      className={
+                        transaction.type === "INCOME"
+                          ? "type-chip income-chip"
+                          : "type-chip expense-chip"
+                      }
+                    >
+                      {transaction.type === "INCOME" ? "Ganho" : "Gasto"}
+                    </span>{" "}
                     {transaction.category.name} • {formatDate(transaction.date)}
+                    {" | "}
+                    <span
+                      className={
+                        transaction.isSettled
+                          ? "status-chip settled"
+                          : "status-chip pending"
+                      }
+                    >
+                      {getSettlementLabel(transaction)}
+                    </span>
+                    {transaction.paymentMethod
+                      ? ` | ${transaction.paymentMethod}`
+                      : ""}
+                    {transaction.account ? ` | ${transaction.account}` : ""}
                   </span>
                 </div>
 
@@ -444,13 +644,6 @@ export function TransactionsPage() {
                   <div className="row-actions">
                     <button
                       type="button"
-                      onClick={() => handleEdit(transaction)}
-                    >
-                      Editar
-                    </button>
-
-                    <button
-                      type="button"
                       className="danger-button"
                       onClick={() => handleDelete(transaction.id)}
                     >
@@ -463,6 +656,8 @@ export function TransactionsPage() {
           </ul>
         )}
       </section>
+      </>
+      )}
     </main>
   );
 }
