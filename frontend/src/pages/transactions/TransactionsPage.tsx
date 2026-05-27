@@ -3,46 +3,189 @@ import type { FormEvent } from "react";
 import { categoryService } from "../../api/categoryService";
 import { transactionService } from "../../api/transactionService";
 import { useAuth } from "../../hooks/useAuth";
+import { useLanguage } from "../../hooks/useLanguage";
 import type { Category, CategoryType } from "../../types/category";
 import type { Transaction, TransactionFilters } from "../../types/transaction";
 
-function formatCurrency(value: number | string) {
-  return new Intl.NumberFormat("pt-BR", {
+const transactionText = {
+  pt: {
+    online: "Sistema online",
+    addTitle: "Adicionar",
+    statementTitle: "Extrato",
+    addSubtitle: "Cadastre um novo gasto ou ganho.",
+    statementSubtitle: "Acompanhe seus gastos, ganhos e pendências financeiras.",
+    editEntry: "Editar lançamento",
+    newExpense: "Novo gasto",
+    newIncome: "Novo ganho",
+    entryType: "Tipo de lançamento",
+    expense: "Gasto",
+    income: "Ganho",
+    description: "Descrição",
+    descriptionPlaceholder: "Ex: Mercado",
+    amount: "Valor",
+    amountPlaceholder: "Ex: 150.00",
+    date: "Data",
+    category: "Categoria",
+    selectCategory: "Selecione uma categoria",
+    newCategory: "Nova categoria",
+    newExpenseCategoryPlaceholder: "Ex: Mercado",
+    newIncomeCategoryPlaceholder: "Ex: Bônus",
+    creating: "Criando...",
+    addCategory: "+ Nova categoria",
+    paymentMethod: "Forma de pagamento",
+    notInformed: "Não informado",
+    account: "Conta onde recebeu",
+    accountPlaceholder: "Ex: Nubank",
+    paidQuestion: "Já paguei",
+    receivedQuestion: "Já recebi",
+    saving: "Salvando...",
+    saveChanges: "Salvar alterações",
+    createTransaction: "Criar transação",
+    cancelEdit: "Cancelar edição",
+    filters: "Filtros",
+    month: "Mês",
+    year: "Ano",
+    movement: "Movimento",
+    all: "Todos",
+    allFemale: "Todas",
+    expenses: "Gastos",
+    incomes: "Ganhos",
+    status: "Status",
+    settled: "Pagos/recebidos",
+    pending: "Pendentes",
+    applyFilters: "Aplicar filtros",
+    clear: "Limpar",
+    transactions: "Movimentações",
+    loadingStatement: "Carregando extrato...",
+    noTransactions: "Nenhuma movimentação encontrada.",
+    delete: "Excluir",
+    deleteConfirm: "Deseja excluir esta transação?",
+    paid: "Pago",
+    unpaid: "Não pago",
+    received: "Recebido",
+    notReceived: "Não recebido",
+    loadTransactionsError: "Erro ao carregar transações",
+    loadCategoriesError: "Erro ao carregar categorias",
+    saveTransactionError: "Erro ao salvar transação",
+    createCategoryError: "Erro ao criar categoria",
+    deleteTransactionError: "Erro ao excluir transação",
+  },
+  en: {
+    online: "System online",
+    addTitle: "Add",
+    statementTitle: "Statement",
+    addSubtitle: "Register a new expense or income.",
+    statementSubtitle: "Track your expenses, income and financial pending items.",
+    editEntry: "Edit entry",
+    newExpense: "New expense",
+    newIncome: "New income",
+    entryType: "Entry type",
+    expense: "Expense",
+    income: "Income",
+    description: "Description",
+    descriptionPlaceholder: "Ex: Groceries",
+    amount: "Amount",
+    amountPlaceholder: "Ex: 150.00",
+    date: "Date",
+    category: "Category",
+    selectCategory: "Select a category",
+    newCategory: "New category",
+    newExpenseCategoryPlaceholder: "Ex: Groceries",
+    newIncomeCategoryPlaceholder: "Ex: Bonus",
+    creating: "Creating...",
+    addCategory: "+ New category",
+    paymentMethod: "Payment method",
+    notInformed: "Not informed",
+    account: "Receiving account",
+    accountPlaceholder: "Ex: Nubank",
+    paidQuestion: "Already paid",
+    receivedQuestion: "Already received",
+    saving: "Saving...",
+    saveChanges: "Save changes",
+    createTransaction: "Create transaction",
+    cancelEdit: "Cancel edit",
+    filters: "Filters",
+    month: "Month",
+    year: "Year",
+    movement: "Movement",
+    all: "All",
+    allFemale: "All",
+    expenses: "Expenses",
+    incomes: "Income",
+    status: "Status",
+    settled: "Paid/received",
+    pending: "Pending",
+    applyFilters: "Apply filters",
+    clear: "Clear",
+    transactions: "Transactions",
+    loadingStatement: "Loading statement...",
+    noTransactions: "No transactions found.",
+    delete: "Delete",
+    deleteConfirm: "Do you want to delete this transaction?",
+    paid: "Paid",
+    unpaid: "Unpaid",
+    received: "Received",
+    notReceived: "Not received",
+    loadTransactionsError: "Error loading transactions",
+    loadCategoriesError: "Error loading categories",
+    saveTransactionError: "Error saving transaction",
+    createCategoryError: "Error creating category",
+    deleteTransactionError: "Error deleting transaction",
+  },
+};
+
+const paymentMethodOptions = [
+  { value: "Pix", label: { pt: "Pix", en: "Pix" } },
+  { value: "Dinheiro", label: { pt: "Dinheiro", en: "Cash" } },
+  {
+    value: "Cartão de débito",
+    label: { pt: "Cartão de débito", en: "Debit card" },
+  },
+  {
+    value: "Cartão de crédito",
+    label: { pt: "Cartão de crédito", en: "Credit card" },
+  },
+  { value: "Boleto", label: { pt: "Boleto", en: "Bank slip" } },
+  { value: "Transferência", label: { pt: "Transferência", en: "Transfer" } },
+  { value: "Outro", label: { pt: "Outro", en: "Other" } },
+];
+
+function getLocale(language: "pt" | "en") {
+  return language === "en" ? "en-US" : "pt-BR";
+}
+
+function formatCurrency(value: number | string, language: "pt" | "en") {
+  return new Intl.NumberFormat(getLocale(language), {
     style: "currency",
     currency: "BRL",
   }).format(Number(value));
 }
 
-function formatDate(value: string) {
-  return new Intl.DateTimeFormat("pt-BR", {
+function formatDate(value: string, language: "pt" | "en") {
+  return new Intl.DateTimeFormat(getLocale(language), {
     timeZone: "UTC",
   }).format(new Date(value));
 }
-
-const paymentMethodOptions = [
-  "Pix",
-  "Dinheiro",
-  "Cartão de débito",
-  "Cartão de crédito",
-  "Boleto",
-  "Transferência",
-  "Outro",
-];
 
 type TransactionsPageProps = {
   mode?: "statement" | "form";
 };
 
-function getSettlementLabel(transaction: Transaction) {
+function getSettlementLabel(
+  transaction: Transaction,
+  t: (typeof transactionText)["pt"]
+) {
   if (transaction.type === "INCOME") {
-    return transaction.isSettled ? "Recebido" : "Não recebido";
+    return transaction.isSettled ? t.received : t.notReceived;
   }
 
-  return transaction.isSettled ? "Pago" : "Não pago";
+  return transaction.isSettled ? t.paid : t.unpaid;
 }
 
 export function TransactionsPage({ mode = "statement" }: TransactionsPageProps) {
   const { token } = useAuth();
+  const { language } = useLanguage();
+  const t = transactionText[language];
   const isFormMode = mode === "form";
 
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -91,7 +234,7 @@ export function TransactionsPage({ mode = "statement" }: TransactionsPageProps) 
       setTransactions(data);
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : "Erro ao carregar transações"
+        err instanceof Error ? err.message : t.loadTransactionsError
       );
     } finally {
       setIsLoading(false);
@@ -108,7 +251,7 @@ export function TransactionsPage({ mode = "statement" }: TransactionsPageProps) 
       setCategories(data);
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : "Erro ao carregar categorias"
+        err instanceof Error ? err.message : t.loadCategoriesError
       );
     }
   }
@@ -138,7 +281,7 @@ export function TransactionsPage({ mode = "statement" }: TransactionsPageProps) 
         }
 
         setError(
-          err instanceof Error ? err.message : "Erro ao carregar transações"
+          err instanceof Error ? err.message : t.loadTransactionsError
         );
       })
       .finally(() => {
@@ -152,7 +295,7 @@ export function TransactionsPage({ mode = "statement" }: TransactionsPageProps) 
     return () => {
       isMounted = false;
     };
-  }, [token]);
+  }, [token, t.loadTransactionsError]);
 
   function resetForm() {
     setDescription("");
@@ -207,7 +350,7 @@ export function TransactionsPage({ mode = "statement" }: TransactionsPageProps) 
       await loadTransactions();
       await loadCategories();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Erro ao salvar transação");
+      setError(err instanceof Error ? err.message : t.saveTransactionError);
     } finally {
       setIsSubmitting(false);
     }
@@ -233,7 +376,7 @@ export function TransactionsPage({ mode = "statement" }: TransactionsPageProps) 
       setNewCategoryName("");
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : "Erro ao criar categoria"
+        err instanceof Error ? err.message : t.createCategoryError
       );
     } finally {
       setIsCreatingCategory(false);
@@ -245,7 +388,7 @@ export function TransactionsPage({ mode = "statement" }: TransactionsPageProps) 
       return;
     }
 
-    const confirmed = window.confirm("Deseja excluir esta transação?");
+    const confirmed = window.confirm(t.deleteConfirm);
 
     if (!confirmed) {
       return;
@@ -257,7 +400,7 @@ export function TransactionsPage({ mode = "statement" }: TransactionsPageProps) 
       await transactionService.remove(token, transactionId);
       await loadTransactions();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Erro ao excluir transação");
+      setError(err instanceof Error ? err.message : t.deleteTransactionError);
     }
   }
 
@@ -282,14 +425,14 @@ export function TransactionsPage({ mode = "statement" }: TransactionsPageProps) 
 
   return (
     <main className="dashboard-page">
-      <header className="dashboard-header">
+      <header className="dashboard-header" data-status={t.online}>
         <div>
           <span className="app-badge">FinTrack</span>
-          <h1>{isFormMode ? "Adicionar" : "Extrato"}</h1>
+          <h1>{isFormMode ? t.addTitle : t.statementTitle}</h1>
           <p>
             {isFormMode
-              ? "Cadastre um novo gasto ou ganho."
-              : "Acompanhe seus gastos, ganhos e pendências financeiras."}
+              ? t.addSubtitle
+              : t.statementSubtitle}
           </p>
         </div>
       </header>
@@ -299,20 +442,20 @@ export function TransactionsPage({ mode = "statement" }: TransactionsPageProps) 
         <article className="dashboard-panel">
           <h2>
             {editingTransaction
-              ? "Editar lançamento"
+              ? t.editEntry
               : type === "EXPENSE"
-                ? "Novo gasto"
-                : "Novo ganho"}
+                ? t.newExpense
+                : t.newIncome}
           </h2>
 
           <form className="auth-form" onSubmit={handleSubmit}>
-            <div className="mode-selector" aria-label="Tipo de lançamento">
+            <div className="mode-selector" aria-label={t.entryType}>
               <button
                 type="button"
                 className={type === "EXPENSE" ? "active" : ""}
                 onClick={() => selectTransactionType("EXPENSE")}
               >
-                Gasto
+                {t.expense}
               </button>
 
               <button
@@ -320,15 +463,15 @@ export function TransactionsPage({ mode = "statement" }: TransactionsPageProps) 
                 className={type === "INCOME" ? "active" : ""}
                 onClick={() => selectTransactionType("INCOME")}
               >
-                Ganho
+                {t.income}
               </button>
             </div>
 
             <label>
-              Descrição
+              {t.description}
               <input
                 type="text"
-                placeholder="Ex: Mercado"
+                placeholder={t.descriptionPlaceholder}
                 value={description}
                 onChange={(event) => setDescription(event.target.value)}
                 required
@@ -336,12 +479,12 @@ export function TransactionsPage({ mode = "statement" }: TransactionsPageProps) 
             </label>
 
             <label>
-              Valor
+              {t.amount}
               <input
                 type="number"
                 min="0.01"
                 step="0.01"
-                placeholder="Ex: 150.00"
+                placeholder={t.amountPlaceholder}
                 value={amount}
                 onChange={(event) => setAmount(event.target.value)}
                 required
@@ -349,7 +492,7 @@ export function TransactionsPage({ mode = "statement" }: TransactionsPageProps) 
             </label>
 
             <label>
-              Data
+              {t.date}
               <input
                 type="date"
                 value={date}
@@ -359,13 +502,13 @@ export function TransactionsPage({ mode = "statement" }: TransactionsPageProps) 
             </label>
 
             <label>
-              Categoria
+              {t.category}
               <select
                 value={categoryId}
                 onChange={(event) => setCategoryId(event.target.value)}
                 required
               >
-                <option value="">Selecione uma categoria</option>
+                <option value="">{t.selectCategory}</option>
 
                 {filteredCategoriesForForm.map((category) => (
                   <option key={category.id} value={category.id}>
@@ -377,11 +520,13 @@ export function TransactionsPage({ mode = "statement" }: TransactionsPageProps) 
 
             <div className="inline-category-form">
               <label>
-                Nova categoria
+                {t.newCategory}
                 <input
                   type="text"
                   placeholder={
-                    type === "EXPENSE" ? "Ex: Mercado" : "Ex: Bônus"
+                    type === "EXPENSE"
+                      ? t.newExpenseCategoryPlaceholder
+                      : t.newIncomeCategoryPlaceholder
                   }
                   value={newCategoryName}
                   onChange={(event) => setNewCategoryName(event.target.value)}
@@ -394,22 +539,22 @@ export function TransactionsPage({ mode = "statement" }: TransactionsPageProps) 
                 disabled={isCreatingCategory || !newCategoryName.trim()}
                 onClick={handleCreateCategory}
               >
-                {isCreatingCategory ? "Criando..." : "+ Nova categoria"}
+                {isCreatingCategory ? t.creating : t.addCategory}
               </button>
             </div>
 
             {type === "EXPENSE" && (
               <label>
-                Forma de pagamento
+                {t.paymentMethod}
                 <select
                   value={paymentMethod}
                   onChange={(event) => setPaymentMethod(event.target.value)}
                 >
-                  <option value="">Não informado</option>
+                  <option value="">{t.notInformed}</option>
 
                   {paymentMethodOptions.map((option) => (
-                    <option key={option} value={option}>
-                      {option}
+                    <option key={option.value} value={option.value}>
+                      {option.label[language]}
                     </option>
                   ))}
                 </select>
@@ -418,10 +563,10 @@ export function TransactionsPage({ mode = "statement" }: TransactionsPageProps) 
 
             {type === "INCOME" && (
               <label>
-                Conta onde recebeu
+                {t.account}
                 <input
                   type="text"
-                  placeholder="Ex: Nubank"
+                  placeholder={t.accountPlaceholder}
                   value={account}
                   onChange={(event) => setAccount(event.target.value)}
                 />
@@ -434,17 +579,17 @@ export function TransactionsPage({ mode = "statement" }: TransactionsPageProps) 
                 checked={isSettled}
                 onChange={(event) => setIsSettled(event.target.checked)}
               />
-              {type === "EXPENSE" ? "Já paguei" : "Já recebi"}
+              {type === "EXPENSE" ? t.paidQuestion : t.receivedQuestion}
             </label>
 
             {error && <p className="form-error">{error}</p>}
 
             <button type="submit" disabled={isSubmitting}>
               {isSubmitting
-                ? "Salvando..."
+                ? t.saving
                 : editingTransaction
-                  ? "Salvar alterações"
-                  : "Criar transação"}
+                  ? t.saveChanges
+                  : t.createTransaction}
             </button>
 
             {editingTransaction && (
@@ -453,7 +598,7 @@ export function TransactionsPage({ mode = "statement" }: TransactionsPageProps) 
                 className="outline-button"
                 onClick={resetForm}
               >
-                Cancelar edição
+                {t.cancelEdit}
               </button>
             )}
           </form>
@@ -463,11 +608,11 @@ export function TransactionsPage({ mode = "statement" }: TransactionsPageProps) 
       <>
       <section className="content-grid statement-grid">
         <article className="dashboard-panel">
-          <h2>Filtros</h2>
+          <h2>{t.filters}</h2>
 
           <form className="filter-form" onSubmit={handleApplyFilters}>
             <label>
-              Mês
+              {t.month}
               <input
                 type="number"
                 min="1"
@@ -484,7 +629,7 @@ export function TransactionsPage({ mode = "statement" }: TransactionsPageProps) 
             </label>
 
             <label>
-              Ano
+              {t.year}
               <input
                 type="number"
                 min="2000"
@@ -500,7 +645,7 @@ export function TransactionsPage({ mode = "statement" }: TransactionsPageProps) 
             </label>
 
             <label>
-              Movimento
+              {t.movement}
               <select
                 value={filters.type}
                 onChange={(event) =>
@@ -510,14 +655,14 @@ export function TransactionsPage({ mode = "statement" }: TransactionsPageProps) 
                   }))
                 }
               >
-                <option value="">Todos</option>
-                <option value="EXPENSE">Gastos</option>
-                <option value="INCOME">Ganhos</option>
+                <option value="">{t.all}</option>
+                <option value="EXPENSE">{t.expenses}</option>
+                <option value="INCOME">{t.incomes}</option>
               </select>
             </label>
 
             <label>
-              Categoria
+              {t.category}
               <select
                 value={filters.categoryId}
                 onChange={(event) =>
@@ -527,7 +672,7 @@ export function TransactionsPage({ mode = "statement" }: TransactionsPageProps) 
                   }))
                 }
               >
-                <option value="">Todas</option>
+                <option value="">{t.allFemale}</option>
 
                 {categories.map((category) => (
                   <option key={category.id} value={category.id}>
@@ -538,7 +683,7 @@ export function TransactionsPage({ mode = "statement" }: TransactionsPageProps) 
             </label>
 
             <label>
-              Status
+              {t.status}
               <select
                 value={filters.isSettled}
                 onChange={(event) =>
@@ -548,14 +693,14 @@ export function TransactionsPage({ mode = "statement" }: TransactionsPageProps) 
                   }))
                 }
               >
-                <option value="">Todos</option>
-                <option value="true">Pagos/recebidos</option>
-                <option value="false">Pendentes</option>
+                <option value="">{t.all}</option>
+                <option value="true">{t.settled}</option>
+                <option value="false">{t.pending}</option>
               </select>
             </label>
 
             <label>
-              Forma de pagamento
+              {t.paymentMethod}
               <select
                 value={filters.paymentMethod}
                 onChange={(event) =>
@@ -565,24 +710,24 @@ export function TransactionsPage({ mode = "statement" }: TransactionsPageProps) 
                   }))
                 }
               >
-                <option value="">Todas</option>
+                <option value="">{t.allFemale}</option>
 
                 {paymentMethodOptions.map((option) => (
-                  <option key={option} value={option}>
-                    {option}
+                  <option key={option.value} value={option.value}>
+                    {option.label[language]}
                   </option>
                 ))}
               </select>
             </label>
 
             <div className="filter-actions">
-              <button type="submit">Aplicar filtros</button>
+              <button type="submit">{t.applyFilters}</button>
               <button
                 type="button"
                 className="outline-button"
                 onClick={handleClearFilters}
               >
-                Limpar
+                {t.clear}
               </button>
             </div>
           </form>
@@ -590,12 +735,12 @@ export function TransactionsPage({ mode = "statement" }: TransactionsPageProps) 
       </section>
 
       <section className="dashboard-panel page-section">
-        <h2>Movimentações</h2>
+        <h2>{t.transactions}</h2>
 
         {isLoading ? (
-          <p>Carregando extrato...</p>
+          <p>{t.loadingStatement}</p>
         ) : transactions.length === 0 ? (
-          <p>Nenhuma movimentação encontrada.</p>
+          <p>{t.noTransactions}</p>
         ) : (
           <ul className="data-list">
             {transactions.map((transaction) => (
@@ -610,9 +755,10 @@ export function TransactionsPage({ mode = "statement" }: TransactionsPageProps) 
                           : "type-chip expense-chip"
                       }
                     >
-                      {transaction.type === "INCOME" ? "Ganho" : "Gasto"}
+                      {transaction.type === "INCOME" ? t.income : t.expense}
                     </span>{" "}
-                    {transaction.category.name} • {formatDate(transaction.date)}
+                    {transaction.category.name} •{" "}
+                    {formatDate(transaction.date, language)}
                     {" | "}
                     <span
                       className={
@@ -621,7 +767,7 @@ export function TransactionsPage({ mode = "statement" }: TransactionsPageProps) 
                           : "status-chip pending"
                       }
                     >
-                      {getSettlementLabel(transaction)}
+                      {getSettlementLabel(transaction, t)}
                     </span>
                     {transaction.paymentMethod
                       ? ` | ${transaction.paymentMethod}`
@@ -638,7 +784,7 @@ export function TransactionsPage({ mode = "statement" }: TransactionsPageProps) 
                         : "expense-value"
                     }
                   >
-                    {formatCurrency(transaction.amount)}
+                    {formatCurrency(transaction.amount, language)}
                   </strong>
 
                   <div className="row-actions">
@@ -647,7 +793,7 @@ export function TransactionsPage({ mode = "statement" }: TransactionsPageProps) 
                       className="danger-button"
                       onClick={() => handleDelete(transaction.id)}
                     >
-                      Excluir
+                      {t.delete}
                     </button>
                   </div>
                 </div>

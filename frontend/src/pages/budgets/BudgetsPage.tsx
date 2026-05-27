@@ -2,10 +2,106 @@ import { useEffect, useState } from "react";
 import type { FormEvent } from "react";
 import { budgetService } from "../../api/budgetService";
 import { useAuth } from "../../hooks/useAuth";
-import type { Budget, BudgetAlert } from "../../types/budget";
+import { useLanguage } from "../../hooks/useLanguage";
+import type { Budget, BudgetAlert, BudgetAlertStatus } from "../../types/budget";
 
-function formatCurrency(value: number | string) {
-  return new Intl.NumberFormat("pt-BR", {
+const budgetText = {
+  pt: {
+    online: "Sistema online",
+    title: "Orçamentos",
+    subtitle: "Controle o limite mensal e acompanhe alertas de gastos.",
+    editBudget: "Editar orçamento",
+    newBudget: "Novo orçamento",
+    month: "Mês",
+    year: "Ano",
+    monthlyLimit: "Limite mensal",
+    monthlyLimitPlaceholder: "Ex: 1000.00",
+    saving: "Salvando...",
+    saveChanges: "Salvar alterações",
+    createBudget: "Criar orçamento",
+    cancelEdit: "Cancelar edição",
+    alertTitle: "Consultar alerta",
+    checking: "Consultando...",
+    checkAlert: "Consultar alerta",
+    used: "usado",
+    limit: "Limite",
+    spent: "Gasto",
+    remaining: "Restante",
+    registeredBudgets: "Orçamentos cadastrados",
+    loadingBudgets: "Carregando orçamentos...",
+    noBudgets: "Nenhum orçamento cadastrado ainda.",
+    edit: "Editar",
+    delete: "Excluir",
+    deleteConfirm: "Deseja excluir este orçamento?",
+    loadError: "Erro ao carregar orçamentos",
+    saveError: "Erro ao salvar orçamento",
+    deleteError: "Erro ao excluir orçamento",
+    alertError: "Erro ao consultar alerta",
+    status: {
+      OK: "Dentro do limite",
+      NEAR_LIMIT: "Próximo do limite",
+      EXCEEDED: "Limite ultrapassado",
+      NO_BUDGET: "Sem orçamento",
+    },
+    alertMessage: {
+      OK: "Seu orçamento está dentro do limite definido.",
+      NEAR_LIMIT: "Atenção: você está próximo do limite mensal.",
+      EXCEEDED: "Seu gasto ultrapassou o limite definido.",
+      NO_BUDGET: "Nenhum orçamento foi cadastrado para este período.",
+    },
+  },
+  en: {
+    online: "System online",
+    title: "Budgets",
+    subtitle: "Control monthly limits and track spending alerts.",
+    editBudget: "Edit budget",
+    newBudget: "New budget",
+    month: "Month",
+    year: "Year",
+    monthlyLimit: "Monthly limit",
+    monthlyLimitPlaceholder: "Ex: 1000.00",
+    saving: "Saving...",
+    saveChanges: "Save changes",
+    createBudget: "Create budget",
+    cancelEdit: "Cancel edit",
+    alertTitle: "Check alert",
+    checking: "Checking...",
+    checkAlert: "Check alert",
+    used: "used",
+    limit: "Limit",
+    spent: "Spent",
+    remaining: "Remaining",
+    registeredBudgets: "Registered budgets",
+    loadingBudgets: "Loading budgets...",
+    noBudgets: "No budgets registered yet.",
+    edit: "Edit",
+    delete: "Delete",
+    deleteConfirm: "Do you want to delete this budget?",
+    loadError: "Error loading budgets",
+    saveError: "Error saving budget",
+    deleteError: "Error deleting budget",
+    alertError: "Error checking alert",
+    status: {
+      OK: "Within limit",
+      NEAR_LIMIT: "Near limit",
+      EXCEEDED: "Limit exceeded",
+      NO_BUDGET: "No budget",
+    },
+    alertMessage: {
+      OK: "Your budget is within the defined limit.",
+      NEAR_LIMIT: "Heads up: you are close to the monthly limit.",
+      EXCEEDED: "Your spending exceeded the defined limit.",
+      NO_BUDGET: "No budget was registered for this period.",
+    },
+  },
+};
+
+function getLocale(language: "pt" | "en") {
+  return language === "en" ? "en-US" : "pt-BR";
+}
+
+function formatCurrency(value: number | string, language: "pt" | "en") {
+  return new Intl.NumberFormat(getLocale(language), {
     style: "currency",
     currency: "BRL",
   }).format(Number(value));
@@ -19,24 +115,17 @@ function getCurrentYear() {
   return new Date().getFullYear();
 }
 
-function getStatusLabel(status: string) {
-  if (status === "EXCEEDED") {
-    return "Limite ultrapassado";
-  }
-
-  if (status === "NEAR_LIMIT") {
-    return "Próximo do limite";
-  }
-
-  if (status === "NO_BUDGET") {
-    return "Sem orçamento";
-  }
-
-  return "Dentro do limite";
+function getStatusLabel(
+  status: BudgetAlertStatus,
+  t: (typeof budgetText)["pt"]
+) {
+  return t.status[status];
 }
 
 export function BudgetsPage() {
   const { token } = useAuth();
+  const { language } = useLanguage();
+  const t = budgetText[language];
 
   const [budgets, setBudgets] = useState<Budget[]>([]);
   const [alert, setAlert] = useState<BudgetAlert | null>(null);
@@ -68,7 +157,7 @@ export function BudgetsPage() {
       setBudgets(data);
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : "Erro ao carregar orçamentos"
+        err instanceof Error ? err.message : t.loadError
       );
     } finally {
       setIsLoading(false);
@@ -97,7 +186,7 @@ export function BudgetsPage() {
         }
 
         setError(
-          err instanceof Error ? err.message : "Erro ao carregar orçamentos"
+          err instanceof Error ? err.message : t.loadError
         );
       })
       .finally(() => {
@@ -111,7 +200,7 @@ export function BudgetsPage() {
     return () => {
       isMounted = false;
     };
-  }, [token]);
+  }, [token, t.loadError]);
 
   function resetForm() {
     setMonth(String(getCurrentMonth()));
@@ -146,7 +235,7 @@ export function BudgetsPage() {
       resetForm();
       await loadBudgets();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Erro ao salvar orçamento");
+      setError(err instanceof Error ? err.message : t.saveError);
     } finally {
       setIsSubmitting(false);
     }
@@ -164,7 +253,7 @@ export function BudgetsPage() {
       return;
     }
 
-    const confirmed = window.confirm("Deseja excluir este orçamento?");
+    const confirmed = window.confirm(t.deleteConfirm);
 
     if (!confirmed) {
       return;
@@ -176,7 +265,7 @@ export function BudgetsPage() {
       await budgetService.remove(token, budgetId);
       await loadBudgets();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Erro ao excluir orçamento");
+      setError(err instanceof Error ? err.message : t.deleteError);
     }
   }
 
@@ -199,7 +288,7 @@ export function BudgetsPage() {
 
       setAlert(data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Erro ao consultar alerta");
+      setError(err instanceof Error ? err.message : t.alertError);
     } finally {
       setIsAlertLoading(false);
     }
@@ -207,21 +296,21 @@ export function BudgetsPage() {
 
   return (
     <main className="dashboard-page">
-      <header className="dashboard-header">
+      <header className="dashboard-header" data-status={t.online}>
         <div>
           <span className="app-badge">FinTrack</span>
-          <h1>Orçamentos</h1>
-          <p>Controle o limite mensal e acompanhe alertas de gastos.</p>
+          <h1>{t.title}</h1>
+          <p>{t.subtitle}</p>
         </div>
       </header>
 
       <section className="content-grid">
         <article className="dashboard-panel">
-          <h2>{editingBudget ? "Editar orçamento" : "Novo orçamento"}</h2>
+          <h2>{editingBudget ? t.editBudget : t.newBudget}</h2>
 
           <form className="auth-form" onSubmit={handleSubmit}>
             <label>
-              Mês
+              {t.month}
               <input
                 type="number"
                 min="1"
@@ -233,7 +322,7 @@ export function BudgetsPage() {
             </label>
 
             <label>
-              Ano
+              {t.year}
               <input
                 type="number"
                 min="2000"
@@ -244,12 +333,12 @@ export function BudgetsPage() {
             </label>
 
             <label>
-              Limite mensal
+              {t.monthlyLimit}
               <input
                 type="number"
                 min="0.01"
                 step="0.01"
-                placeholder="Ex: 1000.00"
+                placeholder={t.monthlyLimitPlaceholder}
                 value={limitAmount}
                 onChange={(event) => setLimitAmount(event.target.value)}
                 required
@@ -260,10 +349,10 @@ export function BudgetsPage() {
 
             <button type="submit" disabled={isSubmitting}>
               {isSubmitting
-                ? "Salvando..."
+                ? t.saving
                 : editingBudget
-                  ? "Salvar alterações"
-                  : "Criar orçamento"}
+                  ? t.saveChanges
+                  : t.createBudget}
             </button>
 
             {editingBudget && (
@@ -272,18 +361,18 @@ export function BudgetsPage() {
                 className="outline-button"
                 onClick={resetForm}
               >
-                Cancelar edição
+                {t.cancelEdit}
               </button>
             )}
           </form>
         </article>
 
         <article className="dashboard-panel">
-          <h2>Consultar alerta</h2>
+          <h2>{t.alertTitle}</h2>
 
           <form className="filter-form" onSubmit={handleSearchAlert}>
             <label>
-              Mês
+              {t.month}
               <input
                 type="number"
                 min="1"
@@ -295,7 +384,7 @@ export function BudgetsPage() {
             </label>
 
             <label>
-              Ano
+              {t.year}
               <input
                 type="number"
                 min="2000"
@@ -307,32 +396,32 @@ export function BudgetsPage() {
 
             <div className="filter-actions">
               <button type="submit" disabled={isAlertLoading}>
-                {isAlertLoading ? "Consultando..." : "Consultar alerta"}
+                {isAlertLoading ? t.checking : t.checkAlert}
               </button>
             </div>
           </form>
 
           {alert && (
             <div className={`alert-card alert-${alert.status.toLowerCase()}`}>
-              <span>{getStatusLabel(alert.status)}</span>
-              <strong>{alert.percentageUsed}% usado</strong>
+              <span>{getStatusLabel(alert.status, t)}</span>
+              <strong>{alert.percentageUsed}% {t.used}</strong>
 
-              <p>{alert.message}</p>
+              <p>{t.alertMessage[alert.status]}</p>
 
               <ul className="alert-values">
                 <li>
-                  <span>Limite</span>
-                  <strong>{formatCurrency(alert.limitAmount)}</strong>
+                  <span>{t.limit}</span>
+                  <strong>{formatCurrency(alert.limitAmount, language)}</strong>
                 </li>
 
                 <li>
-                  <span>Gasto</span>
-                  <strong>{formatCurrency(alert.spentAmount)}</strong>
+                  <span>{t.spent}</span>
+                  <strong>{formatCurrency(alert.spentAmount, language)}</strong>
                 </li>
 
                 <li>
-                  <span>Restante</span>
-                  <strong>{formatCurrency(alert.remainingAmount)}</strong>
+                  <span>{t.remaining}</span>
+                  <strong>{formatCurrency(alert.remainingAmount, language)}</strong>
                 </li>
               </ul>
             </div>
@@ -341,12 +430,12 @@ export function BudgetsPage() {
       </section>
 
       <section className="dashboard-panel page-section">
-        <h2>Orçamentos cadastrados</h2>
+        <h2>{t.registeredBudgets}</h2>
 
         {isLoading ? (
-          <p>Carregando orçamentos...</p>
+          <p>{t.loadingBudgets}</p>
         ) : budgets.length === 0 ? (
-          <p>Nenhum orçamento cadastrado ainda.</p>
+          <p>{t.noBudgets}</p>
         ) : (
           <ul className="data-list">
             {budgets.map((budget) => (
@@ -355,12 +444,14 @@ export function BudgetsPage() {
                   <strong>
                     {budget.month}/{budget.year}
                   </strong>
-                  <span>Limite: {formatCurrency(budget.limitAmount)}</span>
+                  <span>
+                    {t.limit}: {formatCurrency(budget.limitAmount, language)}
+                  </span>
                 </div>
 
                 <div className="row-actions">
                   <button type="button" onClick={() => handleEdit(budget)}>
-                    Editar
+                    {t.edit}
                   </button>
 
                   <button
@@ -368,7 +459,7 @@ export function BudgetsPage() {
                     className="danger-button"
                     onClick={() => handleDelete(budget.id)}
                   >
-                    Excluir
+                    {t.delete}
                   </button>
                 </div>
               </li>

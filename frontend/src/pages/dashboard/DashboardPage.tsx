@@ -1,23 +1,95 @@
 import { useEffect, useState } from "react";
 import { dashboardService } from "../../api/dashboardService";
 import { useAuth } from "../../hooks/useAuth";
+import { useLanguage } from "../../hooks/useLanguage";
 import type { DashboardSummary } from "../../types/dashboard";
 
-function formatCurrency(value: number) {
-  return new Intl.NumberFormat("pt-BR", {
+const dashboardText = {
+  pt: {
+    online: "Sistema online",
+    title: "Dashboard",
+    welcome: "Bem-vindo",
+    loading: "Carregando resumo financeiro...",
+    loadError: "Erro ao carregar resumo financeiro",
+    income: "Receitas",
+    expense: "Despesas",
+    balance: "Saldo",
+    registeredIncome: "Entradas registradas",
+    registeredExpense: "Saídas registradas",
+    positiveFlow: "Fluxo positivo",
+    negativeFlow: "Fluxo negativo",
+    pendingExpense: "A pagar",
+    pendingIncome: "A receber",
+    pendingExpenses: "Despesas pendentes",
+    pendingIncomes: "Receitas pendentes",
+    expensesByCategory: "Despesas por categoria",
+    noExpenses: "Nenhuma despesa cadastrada ainda.",
+    latestTransactions: "Últimas movimentações",
+    noTransactions: "Nenhum lançamento financeiro cadastrado ainda.",
+    monthlyPerformance: "Desempenho mensal",
+    monthlySummary: "Resumo mensal",
+    gains: "Ganhos",
+    expenses: "Gastos",
+    incomeType: "Ganho",
+    expenseType: "Gasto",
+    received: "Recebido",
+    receivable: "A receber",
+    paid: "Pago",
+    payable: "A pagar",
+  },
+  en: {
+    online: "System online",
+    title: "Dashboard",
+    welcome: "Welcome",
+    loading: "Loading financial summary...",
+    loadError: "Error loading financial summary",
+    income: "Income",
+    expense: "Expenses",
+    balance: "Balance",
+    registeredIncome: "Registered inflows",
+    registeredExpense: "Registered outflows",
+    positiveFlow: "Positive flow",
+    negativeFlow: "Negative flow",
+    pendingExpense: "To pay",
+    pendingIncome: "To receive",
+    pendingExpenses: "Pending expenses",
+    pendingIncomes: "Pending income",
+    expensesByCategory: "Expenses by category",
+    noExpenses: "No expenses registered yet.",
+    latestTransactions: "Latest transactions",
+    noTransactions: "No financial entries registered yet.",
+    monthlyPerformance: "Monthly performance",
+    monthlySummary: "Monthly summary",
+    gains: "Income",
+    expenses: "Expenses",
+    incomeType: "Income",
+    expenseType: "Expense",
+    received: "Received",
+    receivable: "To receive",
+    paid: "Paid",
+    payable: "To pay",
+  },
+};
+
+function getLocale(language: "pt" | "en") {
+  return language === "en" ? "en-US" : "pt-BR";
+}
+
+function formatCurrency(value: number, language: "pt" | "en") {
+  return new Intl.NumberFormat(getLocale(language), {
     style: "currency",
     currency: "BRL",
   }).format(value);
 }
 
-function formatDate(value: string) {
-  return new Intl.DateTimeFormat("pt-BR", {
+function formatDate(value: string, language: "pt" | "en") {
+  return new Intl.DateTimeFormat(getLocale(language), {
     timeZone: "UTC",
   }).format(new Date(value));
 }
 
-function formatMonth(month: number, year: number) {
-  const label = new Intl.DateTimeFormat("pt-BR", {
+function formatMonth(month: number, year: number, language: "pt" | "en") {
+  const label = new Intl.DateTimeFormat(getLocale(language), {
     month: "short",
     timeZone: "UTC",
   }).format(new Date(Date.UTC(year, month - 1, 1)));
@@ -37,21 +109,29 @@ function getBalanceStatus(balance: number) {
   return "neutro";
 }
 
-function getSettlementLabel(type: "INCOME" | "EXPENSE", isSettled: boolean) {
+function getSettlementLabel(
+  type: "INCOME" | "EXPENSE",
+  isSettled: boolean,
+  t: (typeof dashboardText)["pt"]
+) {
   if (type === "INCOME") {
-    return isSettled ? "Recebido" : "A receber";
+    return isSettled ? t.received : t.receivable;
   }
 
-  return isSettled ? "Pago" : "A pagar";
+  return isSettled ? t.paid : t.payable;
 }
 
 function MonthlyPerformanceChart({
   monthlySummary,
+  language,
+  t,
 }: {
   monthlySummary: DashboardSummary["monthlySummary"];
+  language: "pt" | "en";
+  t: (typeof dashboardText)["pt"];
 }) {
   if (monthlySummary.length === 0) {
-    return <p>Nenhum lançamento financeiro cadastrado ainda.</p>;
+    return <p>{t.noTransactions}</p>;
   }
 
   const maxValue = Math.max(
@@ -62,8 +142,8 @@ function MonthlyPerformanceChart({
   return (
     <div className="monthly-performance">
       <div className="chart-legend">
-        <span className="legend-item income-legend">Ganhos</span>
-        <span className="legend-item expense-legend">Gastos</span>
+        <span className="legend-item income-legend">{t.gains}</span>
+        <span className="legend-item expense-legend">{t.expenses}</span>
       </div>
 
       <div className="monthly-bars">
@@ -72,10 +152,10 @@ function MonthlyPerformanceChart({
             key={`${month.year}-${month.month}`}
             className="monthly-bar-card"
           >
-            <span>{formatMonth(month.month, month.year)}</span>
+            <span>{formatMonth(month.month, month.year, language)}</span>
 
             <div className="monthly-bar-line">
-              <small>Ganhos</small>
+              <small>{t.gains}</small>
               <div className="chart-track">
                 <div
                   className="chart-fill income-fill"
@@ -84,11 +164,11 @@ function MonthlyPerformanceChart({
                   }}
                 />
               </div>
-              <strong>{formatCurrency(month.income)}</strong>
+              <strong>{formatCurrency(month.income, language)}</strong>
             </div>
 
             <div className="monthly-bar-line">
-              <small>Gastos</small>
+              <small>{t.expenses}</small>
               <div className="chart-track">
                 <div
                   className="chart-fill expense-fill"
@@ -97,7 +177,7 @@ function MonthlyPerformanceChart({
                   }}
                 />
               </div>
-              <strong>{formatCurrency(month.expense)}</strong>
+              <strong>{formatCurrency(month.expense, language)}</strong>
             </div>
           </article>
         ))}
@@ -108,6 +188,8 @@ function MonthlyPerformanceChart({
 
 export function DashboardPage() {
   const { user, token } = useAuth();
+  const { language } = useLanguage();
+  const t = dashboardText[language];
 
   const [summary, setSummary] = useState<DashboardSummary | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -137,7 +219,7 @@ export function DashboardPage() {
         setError(
           err instanceof Error
             ? err.message
-            : "Erro ao carregar resumo financeiro"
+            : t.loadError
         );
       })
       .finally(() => {
@@ -151,21 +233,23 @@ export function DashboardPage() {
     return () => {
       isMounted = false;
     };
-  }, [token]);
+  }, [token, t.loadError]);
 
   return (
     <main className="dashboard-page">
-      <header className="dashboard-header">
+      <header className="dashboard-header" data-status={t.online}>
         <div>
           <span className="app-badge">FinTrack</span>
-          <h1>Dashboard</h1>
-          <p>Bem-vindo, {user?.name}.</p>
+          <h1>{t.title}</h1>
+          <p>
+            {t.welcome}, {user?.name}.
+          </p>
         </div>
       </header>
 
       {isLoading && (
         <section className="dashboard-placeholder">
-          <p>Carregando resumo financeiro...</p>
+          <p>{t.loading}</p>
         </section>
       )}
 
@@ -179,46 +263,46 @@ export function DashboardPage() {
         <>
           <section className="summary-grid">
             <article className="summary-card metric-card income-card">
-              <span>Receitas</span>
-              <strong>{formatCurrency(summary.totalIncome)}</strong>
-              <small>Entradas registradas</small>
+              <span>{t.income}</span>
+              <strong>{formatCurrency(summary.totalIncome, language)}</strong>
+              <small>{t.registeredIncome}</small>
             </article>
 
             <article className="summary-card metric-card expense-card">
-              <span>Despesas</span>
-              <strong>{formatCurrency(summary.totalExpense)}</strong>
-              <small>Saídas registradas</small>
+              <span>{t.expense}</span>
+              <strong>{formatCurrency(summary.totalExpense, language)}</strong>
+              <small>{t.registeredExpense}</small>
             </article>
 
             <article className="summary-card metric-card highlight">
-              <span>Saldo</span>
-              <strong>{formatCurrency(summary.balance)}</strong>
+              <span>{t.balance}</span>
+              <strong>{formatCurrency(summary.balance, language)}</strong>
               <small className={`balance-status ${getBalanceStatus(summary.balance)}`}>
-                {summary.balance >= 0 ? "Fluxo positivo" : "Fluxo negativo"}
+                {summary.balance >= 0 ? t.positiveFlow : t.negativeFlow}
               </small>
             </article>
           </section>
 
           <section className="summary-grid pending-grid">
             <article className="summary-card metric-card pending-card">
-              <span>A pagar</span>
-              <strong>{formatCurrency(summary.pendingExpense)}</strong>
-              <small>Despesas pendentes</small>
+              <span>{t.pendingExpense}</span>
+              <strong>{formatCurrency(summary.pendingExpense, language)}</strong>
+              <small>{t.pendingExpenses}</small>
             </article>
 
             <article className="summary-card metric-card receivable-card">
-              <span>A receber</span>
-              <strong>{formatCurrency(summary.pendingIncome)}</strong>
-              <small>Receitas pendentes</small>
+              <span>{t.pendingIncome}</span>
+              <strong>{formatCurrency(summary.pendingIncome, language)}</strong>
+              <small>{t.pendingIncomes}</small>
             </article>
           </section>
 
           <section className="dashboard-grid">
             <article className="dashboard-panel">
-              <h2>Despesas por categoria</h2>
+              <h2>{t.expensesByCategory}</h2>
 
               {summary.expensesByCategory.length === 0 ? (
-                <p>Nenhuma despesa cadastrada ainda.</p>
+                <p>{t.noExpenses}</p>
               ) : (
                 <ul className="data-list">
                   {summary.expensesByCategory.map((category) => {
@@ -238,7 +322,7 @@ export function DashboardPage() {
                           </div>
                         </div>
 
-                        <strong>{formatCurrency(category.total)}</strong>
+                        <strong>{formatCurrency(category.total, language)}</strong>
                       </li>
                     );
                   })}
@@ -247,10 +331,10 @@ export function DashboardPage() {
             </article>
 
             <article className="dashboard-panel">
-              <h2>Últimas movimentações</h2>
+              <h2>{t.latestTransactions}</h2>
 
               {summary.latestTransactions.length === 0 ? (
-                <p>Nenhum lançamento financeiro cadastrado ainda.</p>
+                <p>{t.noTransactions}</p>
               ) : (
                 <ul className="data-list">
                   {summary.latestTransactions.map((transaction) => (
@@ -258,13 +342,17 @@ export function DashboardPage() {
                       <div>
                         <strong>{transaction.description}</strong>
                         <span>
-                          {transaction.type === "INCOME" ? "Ganho" : "Gasto"} |{" "}
-                          {transaction.category.name} | {formatDate(transaction.date)}
+                          {transaction.type === "INCOME"
+                            ? t.incomeType
+                            : t.expenseType}{" "}
+                          | {transaction.category.name} |{" "}
+                          {formatDate(transaction.date, language)}
                         </span>
                         <small>
                           {getSettlementLabel(
                             transaction.type,
-                            transaction.isSettled
+                            transaction.isSettled,
+                            t
                           )}
                           {transaction.paymentMethod
                             ? ` | ${transaction.paymentMethod}`
@@ -280,7 +368,7 @@ export function DashboardPage() {
                             : "expense-value"
                         }
                       >
-                        {formatCurrency(transaction.amount)}
+                        {formatCurrency(transaction.amount, language)}
                       </strong>
                     </li>
                   ))}
@@ -290,15 +378,19 @@ export function DashboardPage() {
           </section>
 
           <section className="dashboard-panel page-section">
-            <h2>Desempenho mensal</h2>
-            <MonthlyPerformanceChart monthlySummary={summary.monthlySummary} />
+            <h2>{t.monthlyPerformance}</h2>
+            <MonthlyPerformanceChart
+              monthlySummary={summary.monthlySummary}
+              language={language}
+              t={t}
+            />
           </section>
 
           <section className="dashboard-panel page-section">
-            <h2>Resumo mensal</h2>
+            <h2>{t.monthlySummary}</h2>
 
             {summary.monthlySummary.length === 0 ? (
-              <p>Nenhum lançamento financeiro cadastrado ainda.</p>
+              <p>{t.noTransactions}</p>
             ) : (
               <ul className="data-list">
                 {summary.monthlySummary.map((month) => (
@@ -308,8 +400,8 @@ export function DashboardPage() {
                         {month.month}/{month.year}
                       </span>
                       <small>
-                        Receitas {formatCurrency(month.income)} | Despesas{" "}
-                        {formatCurrency(month.expense)}
+                        {t.income} {formatCurrency(month.income, language)} |{" "}
+                        {t.expense} {formatCurrency(month.expense, language)}
                       </small>
                     </div>
 
@@ -318,7 +410,7 @@ export function DashboardPage() {
                         month.balance >= 0 ? "income-value" : "expense-value"
                       }
                     >
-                      {formatCurrency(month.balance)}
+                      {formatCurrency(month.balance, language)}
                     </strong>
                   </li>
                 ))}
