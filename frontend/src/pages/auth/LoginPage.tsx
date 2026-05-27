@@ -9,13 +9,11 @@ export function LoginPage() {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-
     setError("");
     setIsSubmitting(true);
 
@@ -50,6 +48,7 @@ export function LoginPage() {
               placeholder="seuemail@exemplo.com"
               value={email}
               onChange={(event) => setEmail(event.target.value)}
+              autoComplete="email"
               required
             />
           </label>
@@ -61,9 +60,15 @@ export function LoginPage() {
               placeholder="Sua senha"
               value={password}
               onChange={(event) => setPassword(event.target.value)}
+              autoComplete="current-password"
+              minLength={10}
               required
             />
           </label>
+
+          <div className="forgot-password-link">
+            <Link to="/forgot-password">Esqueci minha senha</Link>
+          </div>
 
           {error && <p className="form-error">{error}</p>}
 
@@ -73,7 +78,7 @@ export function LoginPage() {
         </form>
 
         <p className="auth-footer">
-          Ainda não tem conta? <Link to="/register">Criar conta</Link>
+          Ainda nao tem conta? <Link to="/register">Criar conta</Link>
         </p>
       </section>
     </main>

@@ -50,6 +50,6 @@ export class CategoryService {
         if (transactionsCount > 0) {
             throw new AppError("Não é possível excluir uma categoria que possui transações cadastradas", 400);
         }
-        return this.categoryRepository.delete(id);
+        return this.categoryRepository.delete(id, userId);
     }
 }

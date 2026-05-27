@@ -1,4 +1,5 @@
 import { TransactionType } from "@prisma/client";
+import { AppError } from "../../utils/AppError";
 import {
   CreateTransactionInput,
   ListTransactionsQuery,
@@ -29,15 +30,25 @@ function getMonthDateRange(month?: number, year?: number) {
   };
 }
 
-async function validateCategory(categoryId: string, userId: string, type?: TransactionType) {
-  const category = await transactionRepository.findCategoryById(categoryId, userId);
+async function validateCategory(
+  categoryId: string,
+  userId: string,
+  type?: TransactionType
+) {
+  const category = await transactionRepository.findCategoryById(
+    categoryId,
+    userId
+  );
 
   if (!category) {
-    throw new Error("Categoria não encontrada");
+    throw new AppError("Categoria nao encontrada", 404);
   }
 
   if (type && category.type !== type) {
-    throw new Error("A categoria não corresponde ao tipo da transação");
+    throw new AppError(
+      "A categoria nao corresponde ao tipo da transacao",
+      400
+    );
   }
 
   return category;
@@ -82,7 +93,7 @@ export const transactionService = {
     const transaction = await transactionRepository.findById(id, userId);
 
     if (!transaction) {
-      throw new Error("Transação não encontrada");
+      throw new AppError("Transacao nao encontrada", 404);
     }
 
     return transaction;
@@ -96,7 +107,7 @@ export const transactionService = {
     const transaction = await transactionRepository.findById(id, userId);
 
     if (!transaction) {
-      throw new Error("Transação não encontrada");
+      throw new AppError("Transacao nao encontrada", 404);
     }
 
     const newType = data.type ?? transaction.type;
@@ -116,7 +127,9 @@ export const transactionService = {
           ? normalizeOptionalText(data.paymentMethod)
           : undefined,
       account:
-        data.account !== undefined ? normalizeOptionalText(data.account) : undefined,
+        data.account !== undefined
+          ? normalizeOptionalText(data.account)
+          : undefined,
       isSettled: data.isSettled,
       categoryId: data.categoryId,
     });
@@ -126,7 +139,7 @@ export const transactionService = {
     const transaction = await transactionRepository.findById(id, userId);
 
     if (!transaction) {
-      throw new Error("Transação não encontrada");
+      throw new AppError("Transacao nao encontrada", 404);
     }
 
     await transactionRepository.delete(id, userId);

@@ -2,6 +2,8 @@ import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import "./App.css";
 import { LoginPage } from "./pages/auth/LoginPage";
 import { RegisterPage } from "./pages/auth/RegisterPage";
+import { ForgotPasswordPage } from "./pages/auth/ForgotPasswordPage";
+import { ResetPasswordPage } from "./pages/auth/ResetPasswordPage";
 import { DashboardPage } from "./pages/dashboard/DashboardPage";
 import { CategoriesPage } from "./pages/categories/CategoriesPage";
 import { TransactionsPage } from "./pages/transactions/TransactionsPage";
@@ -17,7 +19,8 @@ function App() {
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
 
         <Route path="/login" element={<LoginPage />} />
-
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
         <Route path="/register" element={<RegisterPage />} />
 
         <Route

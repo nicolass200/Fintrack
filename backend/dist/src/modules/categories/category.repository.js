@@ -41,15 +41,17 @@ export class CategoryRepository {
         });
     }
     async update(data) {
-        return prisma.category.update({
+        await prisma.category.updateMany({
             where: {
                 id: data.id,
+                userId: data.userId,
             },
             data: {
                 name: data.name,
                 type: data.type,
             },
         });
+        return this.findByIdAndUser(data.id, data.userId);
     }
     async countTransactionsByCategoryId(categoryId, userId) {
         return prisma.transaction.count({
@@ -59,10 +61,11 @@ export class CategoryRepository {
             },
         });
     }
-    async delete(id) {
-        return prisma.category.delete({
+    async delete(id, userId) {
+        return prisma.category.deleteMany({
             where: {
                 id,
+                userId,
             },
         });
     }

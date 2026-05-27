@@ -67,15 +67,18 @@ export class CategoryRepository {
   }
 
   async update(data: UpdateCategoryData) {
-    return prisma.category.update({
+    await prisma.category.updateMany({
       where: {
         id: data.id,
+        userId: data.userId,
       },
       data: {
         name: data.name,
         type: data.type,
       },
     });
+
+    return this.findByIdAndUser(data.id, data.userId);
   }
 
   async countTransactionsByCategoryId(categoryId: string, userId: string) {
@@ -87,10 +90,11 @@ export class CategoryRepository {
     });
   }
 
-  async delete(id: string) {
-    return prisma.category.delete({
+  async delete(id: string, userId: string) {
+    return prisma.category.deleteMany({
       where: {
         id,
+        userId,
       },
     });
   }

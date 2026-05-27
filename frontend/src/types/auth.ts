@@ -2,6 +2,7 @@ export type User = {
   id: string;
   name: string;
   email: string;
+  createdAt?: string;
 };
 
 export type RegisterData = {
@@ -16,6 +17,10 @@ export type LoginData = {
 };
 
 export type AuthResponse = {
-  token: string;
   user: User;
+};
+
+export type ResetPasswordData = {
+  token: string;
+  password: string;
 };

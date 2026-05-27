@@ -1,3 +1,4 @@
+import { AppError } from "../../utils/AppError";
 import {
   BudgetAlertsQuery,
   CreateBudgetInput,
@@ -52,7 +53,10 @@ export const budgetService = {
     });
 
     if (existingBudget) {
-      throw new Error("Já existe orçamento cadastrado para este mês e ano");
+      throw new AppError(
+        "Ja existe orcamento cadastrado para este mes e ano",
+        409
+      );
     }
 
     return budgetRepository.create({
@@ -75,7 +79,7 @@ export const budgetService = {
     const budget = await budgetRepository.findById(id, userId);
 
     if (!budget) {
-      throw new Error("Orçamento não encontrado");
+      throw new AppError("Orcamento nao encontrado", 404);
     }
 
     const newMonth = data.month ?? budget.month;
@@ -88,10 +92,13 @@ export const budgetService = {
     });
 
     if (existingBudget && existingBudget.id !== id) {
-      throw new Error("Já existe orçamento cadastrado para este mês e ano");
+      throw new AppError(
+        "Ja existe orcamento cadastrado para este mes e ano",
+        409
+      );
     }
 
-    return budgetRepository.update(id, {
+    return budgetRepository.update(id, userId, {
       month: data.month,
       year: data.year,
       limitAmount: data.limitAmount,
@@ -102,15 +109,18 @@ export const budgetService = {
     const budget = await budgetRepository.findById(id, userId);
 
     if (!budget) {
-      throw new Error("Orçamento não encontrado");
+      throw new AppError("Orcamento nao encontrado", 404);
     }
 
-    await budgetRepository.delete(id);
+    await budgetRepository.delete(id, userId);
   },
 
   async getAlerts(userId: string, query: BudgetAlertsQuery) {
     if (!query.month || !query.year) {
-      throw new Error("Mês e ano são obrigatórios para consultar alertas");
+      throw new AppError(
+        "Mes e ano sao obrigatorios para consultar alertas",
+        400
+      );
     }
 
     const budget = await budgetRepository.findByMonthAndYear({
@@ -125,7 +135,7 @@ export const budgetService = {
         year: query.year,
         hasBudget: false,
         status: "NO_BUDGET",
-        message: "Nenhum orçamento cadastrado para este mês e ano",
+        message: "Nenhum orcamento cadastrado para este mes e ano",
         limitAmount: 0,
         spentAmount: 0,
         remainingAmount: 0,
@@ -155,10 +165,10 @@ export const budgetService = {
       status,
       message:
         status === "EXCEEDED"
-          ? "Limite de orçamento atingido ou ultrapassado"
+          ? "Limite de orcamento atingido ou ultrapassado"
           : status === "NEAR_LIMIT"
-            ? "Você está se aproximando do limite do orçamento"
-            : "Gastos dentro do limite do orçamento",
+            ? "Voce esta se aproximando do limite do orcamento"
+            : "Gastos dentro do limite do orcamento",
       limitAmount,
       spentAmount,
       remainingAmount,

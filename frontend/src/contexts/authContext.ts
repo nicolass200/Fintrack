@@ -8,7 +8,7 @@ export type AuthContextData = {
   isLoading: boolean;
   login: (data: LoginData) => Promise<void>;
   register: (data: RegisterData) => Promise<void>;
-  logout: () => void;
+  logout: () => Promise<void>;
 };
 
 export const AuthContext = createContext<AuthContextData | undefined>(undefined);

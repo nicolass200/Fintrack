@@ -1,6 +1,11 @@
 import bcrypt from "bcryptjs";
+import crypto from "crypto";
 import jwt from "jsonwebtoken";
 import { prisma } from "../../config/prisma";
+import {
+  EmailService,
+  isEmailDeliveryConfigured,
+} from "../../services/email.service";
 import { AppError } from "../../utils/AppError";
 import { CategoryService } from "../categories/category.service";
 
@@ -15,11 +20,16 @@ interface LoginRequest {
   password: string;
 }
 
+interface ResetPasswordRequest {
+  token: string;
+  password: string;
+}
+
 function generateToken(userId: string) {
   const secret = process.env.JWT_SECRET;
 
   if (!secret) {
-    throw new AppError("JWT_SECRET não configurado", 500);
+    throw new AppError("JWT_SECRET not configured", 500);
   }
 
   return jwt.sign({ sub: userId }, secret, {
@@ -29,6 +39,7 @@ function generateToken(userId: string) {
 
 export class AuthService {
   private categoryService = new CategoryService();
+  private emailService = new EmailService();
 
   async register({ name, email, password }: RegisterRequest) {
     const userAlreadyExists = await prisma.user.findUnique({
@@ -36,15 +47,14 @@ export class AuthService {
     });
 
     if (userAlreadyExists) {
-      throw new AppError("E-mail já cadastrado", 409);
+      throw new AppError("E-mail ja cadastrado", 409);
     }
 
-    const passwordHash = await bcrypt.hash(password, 10);
-
+    const passwordHash = await bcrypt.hash(password, 12);
     const user = await prisma.user.create({
       data: {
-        name,
-        email,
+        name: name.trim(),
+        email: email.trim().toLowerCase(),
         passwordHash,
       },
       select: {
@@ -57,30 +67,26 @@ export class AuthService {
 
     await this.categoryService.createDefaultCategoriesForUser(user.id);
 
-    const token = generateToken(user.id);
-
     return {
       user,
-      token,
+      token: generateToken(user.id),
     };
   }
 
   async login({ email, password }: LoginRequest) {
     const user = await prisma.user.findUnique({
-      where: { email },
+      where: { email: email.trim().toLowerCase() },
     });
 
     if (!user || !user.passwordHash) {
-      throw new AppError("E-mail ou senha inválidos", 401);
+      throw new AppError("E-mail ou senha invalidos", 401);
     }
 
     const passwordMatches = await bcrypt.compare(password, user.passwordHash);
 
     if (!passwordMatches) {
-      throw new AppError("E-mail ou senha inválidos", 401);
+      throw new AppError("E-mail ou senha invalidos", 401);
     }
-
-    const token = generateToken(user.id);
 
     return {
       user: {
@@ -89,10 +95,11 @@ export class AuthService {
         email: user.email,
         createdAt: user.createdAt,
       },
-      token,
+      token: generateToken(user.id),
     };
   }
-    async me(userId: string) {
+
+  async me(userId: string) {
     const user = await prisma.user.findUnique({
       where: { id: userId },
       select: {
@@ -104,9 +111,82 @@ export class AuthService {
     });
 
     if (!user) {
-      throw new AppError("Usuário não encontrado", 404);
+      throw new AppError("Usuario nao encontrado", 404);
     }
 
     return user;
+  }
+
+  async forgotPassword(email: string) {
+    const normalizedEmail = email.trim().toLowerCase();
+    const user = await prisma.user.findUnique({
+      where: { email: normalizedEmail },
+    });
+
+    if (!user) {
+      return {
+        message:
+          "Se o e-mail estiver cadastrado, um codigo de recuperacao foi enviado.",
+      };
+    }
+
+    if (!isEmailDeliveryConfigured()) {
+      throw new AppError("Password reset email service is not configured", 500);
+    }
+
+    const token = crypto.randomBytes(16).toString("hex").toUpperCase();
+    const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
+    const expires = new Date(Date.now() + 15 * 60 * 1000);
+
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        passwordResetToken: hashedToken,
+        passwordResetExpires: expires,
+      },
+    });
+
+    await this.emailService.sendPasswordResetEmail(normalizedEmail, token);
+
+    return {
+      message:
+        "Se o e-mail estiver cadastrado, um codigo de recuperacao foi enviado.",
+    };
+  }
+
+  async resetPassword({ token, password }: ResetPasswordRequest) {
+    const normalizedToken = token.trim().toUpperCase();
+    const hashedToken = crypto
+      .createHash("sha256")
+      .update(normalizedToken)
+      .digest("hex");
+
+    const user = await prisma.user.findFirst({
+      where: {
+        passwordResetToken: hashedToken,
+        passwordResetExpires: {
+          gt: new Date(),
+        },
+      },
+    });
+
+    if (!user) {
+      throw new AppError("Codigo de recuperacao invalido ou expirado", 400);
+    }
+
+    const passwordHash = await bcrypt.hash(password, 12);
+
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        passwordHash,
+        passwordResetToken: null,
+        passwordResetExpires: null,
+      },
+    });
+
+    return {
+      message: "Senha atualizada com sucesso.",
+    };
   }
 }

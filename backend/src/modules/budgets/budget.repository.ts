@@ -84,19 +84,23 @@ export const budgetRepository = {
     });
   },
 
-  async update(id: string, data: UpdateBudgetData) {
-    return prisma.budget.update({
+  async update(id: string, userId: string, data: UpdateBudgetData) {
+    await prisma.budget.updateMany({
       where: {
         id,
+        userId,
       },
       data,
     });
+
+    return this.findById(id, userId);
   },
 
-  async delete(id: string) {
-    return prisma.budget.delete({
+  async delete(id: string, userId: string) {
+    return prisma.budget.deleteMany({
       where: {
         id,
+        userId,
       },
     });
   },

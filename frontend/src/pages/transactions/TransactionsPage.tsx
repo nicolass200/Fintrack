@@ -22,8 +22,8 @@ function formatDate(value: string) {
 const paymentMethodOptions = [
   "Pix",
   "Dinheiro",
-  "Cartao de debito",
-  "Cartao de credito",
+  "Cartão de débito",
+  "Cartão de crédito",
   "Boleto",
   "Transferencia",
   "Outro",
@@ -35,10 +35,10 @@ type TransactionsPageProps = {
 
 function getSettlementLabel(transaction: Transaction) {
   if (transaction.type === "INCOME") {
-    return transaction.isSettled ? "Recebido" : "Nao recebido";
+    return transaction.isSettled ? "Recebido" : "Não recebido";
   }
 
-  return transaction.isSettled ? "Pago" : "Nao pago";
+  return transaction.isSettled ? "Pago" : "Não pago";
 }
 
 export function TransactionsPage({ mode = "statement" }: TransactionsPageProps) {
@@ -289,7 +289,7 @@ export function TransactionsPage({ mode = "statement" }: TransactionsPageProps) 
           <p>
             {isFormMode
               ? "Cadastre um novo gasto ou ganho."
-              : "Acompanhe seus gastos, ganhos e pendencias financeiras."}
+              : "Acompanhe seus gastos, ganhos e pendências financeiras."}
           </p>
         </div>
       </header>
@@ -299,14 +299,14 @@ export function TransactionsPage({ mode = "statement" }: TransactionsPageProps) 
         <article className="dashboard-panel">
           <h2>
             {editingTransaction
-              ? "Editar lancamento"
+              ? "Editar lançamento"
               : type === "EXPENSE"
                 ? "Novo gasto"
                 : "Novo ganho"}
           </h2>
 
           <form className="auth-form" onSubmit={handleSubmit}>
-            <div className="mode-selector" aria-label="Tipo de lancamento">
+            <div className="mode-selector" aria-label="Tipo de lançamento">
               <button
                 type="button"
                 className={type === "EXPENSE" ? "active" : ""}
@@ -381,7 +381,7 @@ export function TransactionsPage({ mode = "statement" }: TransactionsPageProps) 
                 <input
                   type="text"
                   placeholder={
-                    type === "EXPENSE" ? "Ex: Mercado" : "Ex: Bonus"
+                    type === "EXPENSE" ? "Ex: Mercado" : "Ex: Bônus"
                   }
                   value={newCategoryName}
                   onChange={(event) => setNewCategoryName(event.target.value)}
@@ -405,7 +405,7 @@ export function TransactionsPage({ mode = "statement" }: TransactionsPageProps) 
                   value={paymentMethod}
                   onChange={(event) => setPaymentMethod(event.target.value)}
                 >
-                  <option value="">Nao informado</option>
+                  <option value="">Não informado</option>
 
                   {paymentMethodOptions.map((option) => (
                     <option key={option} value={option}>
@@ -434,7 +434,7 @@ export function TransactionsPage({ mode = "statement" }: TransactionsPageProps) 
                 checked={isSettled}
                 onChange={(event) => setIsSettled(event.target.checked)}
               />
-              {type === "EXPENSE" ? "Ja paguei" : "Ja recebi"}
+              {type === "EXPENSE" ? "Já paguei" : "Já recebi"}
             </label>
 
             {error && <p className="form-error">{error}</p>}
@@ -590,12 +590,12 @@ export function TransactionsPage({ mode = "statement" }: TransactionsPageProps) 
       </section>
 
       <section className="dashboard-panel page-section">
-        <h2>Movimentacoes</h2>
+        <h2>Movimentações</h2>
 
         {isLoading ? (
           <p>Carregando extrato...</p>
         ) : transactions.length === 0 ? (
-          <p>Nenhuma movimentacao encontrada.</p>
+          <p>Nenhuma movimentação encontrada.</p>
         ) : (
           <ul className="data-list">
             {transactions.map((transaction) => (

@@ -2,10 +2,10 @@ import { NavLink, Outlet } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 
 const navigationItems = [
-  { to: "/dashboard", label: "Inicio", icon: "In", end: false },
+  { to: "/dashboard", label: "Início", icon: "In", end: false },
   { to: "/transactions", label: "Extrato", icon: "Ex", end: true },
   { to: "/transactions/new", label: "Adicionar", icon: "+", end: false },
-  { to: "/budgets", label: "Orcamentos", icon: "$", end: false },
+  { to: "/budgets", label: "Orçamentos", icon: "$", end: false },
   { to: "/profile", label: "Perfil", icon: "Eu", end: false },
 ];
 
@@ -37,7 +37,7 @@ export function AppLayout() {
         <Outlet />
       </div>
 
-      <nav className="bottom-nav" aria-label="Navegacao principal">
+      <nav className="bottom-nav" aria-label="Navegação principal">
         {navigationItems.map((item) => (
           <NavLink
             key={item.to}

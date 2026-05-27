@@ -98,6 +98,6 @@ export class CategoryService {
       );
     }
 
-    return this.categoryRepository.delete(id);
+    return this.categoryRepository.delete(id, userId);
   }
 }

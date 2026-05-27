@@ -10,13 +10,11 @@ export function RegisterPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-
     setError("");
     setIsSubmitting(true);
 
@@ -41,7 +39,7 @@ export function RegisterPage() {
         <div className="auth-header">
           <span className="app-badge">FinTrack</span>
           <h1>Criar conta</h1>
-          <p>Comece a organizar suas receitas, despesas e orçamento mensal.</p>
+          <p>Comece a organizar suas receitas, despesas e orcamento mensal.</p>
         </div>
 
         <form onSubmit={handleSubmit} className="auth-form">
@@ -52,6 +50,7 @@ export function RegisterPage() {
               placeholder="Seu nome"
               value={name}
               onChange={(event) => setName(event.target.value)}
+              autoComplete="name"
               required
             />
           </label>
@@ -63,6 +62,7 @@ export function RegisterPage() {
               placeholder="seuemail@exemplo.com"
               value={email}
               onChange={(event) => setEmail(event.target.value)}
+              autoComplete="email"
               required
             />
           </label>
@@ -71,9 +71,11 @@ export function RegisterPage() {
             Senha
             <input
               type="password"
-              placeholder="Crie uma senha"
+              placeholder="Crie uma senha forte"
               value={password}
               onChange={(event) => setPassword(event.target.value)}
+              autoComplete="new-password"
+              minLength={10}
               required
             />
           </label>
@@ -86,7 +88,7 @@ export function RegisterPage() {
         </form>
 
         <p className="auth-footer">
-          Já tem conta? <Link to="/login">Entrar</Link>
+          Ja tem conta? <Link to="/login">Entrar</Link>
         </p>
       </section>
     </main>

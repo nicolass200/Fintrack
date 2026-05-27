@@ -16,6 +16,15 @@ function formatDate(value: string) {
   }).format(new Date(value));
 }
 
+function formatMonth(month: number, year: number) {
+  const label = new Intl.DateTimeFormat("pt-BR", {
+    month: "short",
+    timeZone: "UTC",
+  }).format(new Date(Date.UTC(year, month - 1, 1)));
+
+  return `${label}/${String(year).slice(-2)}`;
+}
+
 function getBalanceStatus(balance: number) {
   if (balance > 0) {
     return "positivo";
@@ -34,6 +43,67 @@ function getSettlementLabel(type: "INCOME" | "EXPENSE", isSettled: boolean) {
   }
 
   return isSettled ? "Pago" : "A pagar";
+}
+
+function MonthlyPerformanceChart({
+  monthlySummary,
+}: {
+  monthlySummary: DashboardSummary["monthlySummary"];
+}) {
+  if (monthlySummary.length === 0) {
+    return <p>Nenhum lançamento financeiro cadastrado ainda.</p>;
+  }
+
+  const maxValue = Math.max(
+    ...monthlySummary.map((month) => Math.max(month.income, month.expense)),
+    1
+  );
+
+  return (
+    <div className="monthly-performance">
+      <div className="chart-legend">
+        <span className="legend-item income-legend">Ganhos</span>
+        <span className="legend-item expense-legend">Gastos</span>
+      </div>
+
+      <div className="monthly-bars">
+        {monthlySummary.map((month) => (
+          <article
+            key={`${month.year}-${month.month}`}
+            className="monthly-bar-card"
+          >
+            <span>{formatMonth(month.month, month.year)}</span>
+
+            <div className="monthly-bar-line">
+              <small>Ganhos</small>
+              <div className="chart-track">
+                <div
+                  className="chart-fill income-fill"
+                  style={{
+                    width: `${Math.max(4, (month.income / maxValue) * 100)}%`,
+                  }}
+                />
+              </div>
+              <strong>{formatCurrency(month.income)}</strong>
+            </div>
+
+            <div className="monthly-bar-line">
+              <small>Gastos</small>
+              <div className="chart-track">
+                <div
+                  className="chart-fill expense-fill"
+                  style={{
+                    width: `${Math.max(4, (month.expense / maxValue) * 100)}%`,
+                  }}
+                />
+              </div>
+              <strong>{formatCurrency(month.expense)}</strong>
+            </div>
+          </article>
+        ))}
+      </div>
+    </div>
+  );
 }
 
 export function DashboardPage() {
@@ -117,7 +187,7 @@ export function DashboardPage() {
             <article className="summary-card metric-card expense-card">
               <span>Despesas</span>
               <strong>{formatCurrency(summary.totalExpense)}</strong>
-              <small>Saidas registradas</small>
+              <small>Saídas registradas</small>
             </article>
 
             <article className="summary-card metric-card highlight">
@@ -151,36 +221,36 @@ export function DashboardPage() {
                 <p>Nenhuma despesa cadastrada ainda.</p>
               ) : (
                 <ul className="data-list">
-                  {summary.expensesByCategory.map((category) => (
-                    <li key={category.categoryId} className="category-row">
-                      <div>
-                        <span>{category.categoryName}</span>
-                        <div className="progress-track">
-                          <div
-                            className="progress-fill"
-                            style={{
-                              width: `${Math.min(
-                                100,
-                                (category.total /
-                                  Math.max(summary.totalExpense, 1)) *
-                                  100
-                              )}%`,
-                            }}
-                          />
+                  {summary.expensesByCategory.map((category) => {
+                    const percent = Math.round(
+                      (category.total / Math.max(summary.totalExpense, 1)) * 100
+                    );
+
+                    return (
+                      <li key={category.categoryId} className="category-row">
+                        <div>
+                          <span>{category.categoryName}</span>
+                          <div className="progress-track">
+                            <div
+                              className="progress-fill"
+                              style={{ width: `${percent}%` }}
+                            />
+                          </div>
                         </div>
-                      </div>
-                      <strong>{formatCurrency(category.total)}</strong>
-                    </li>
-                  ))}
+
+                        <strong>{formatCurrency(category.total)}</strong>
+                      </li>
+                    );
+                  })}
                 </ul>
               )}
             </article>
 
             <article className="dashboard-panel">
-              <h2>Ultimas movimentacoes</h2>
+              <h2>Últimas movimentações</h2>
 
               {summary.latestTransactions.length === 0 ? (
-                <p>Nenhum lancamento financeiro cadastrado ainda.</p>
+                <p>Nenhum lançamento financeiro cadastrado ainda.</p>
               ) : (
                 <ul className="data-list">
                   {summary.latestTransactions.map((transaction) => (
@@ -220,10 +290,15 @@ export function DashboardPage() {
           </section>
 
           <section className="dashboard-panel page-section">
+            <h2>Desempenho mensal</h2>
+            <MonthlyPerformanceChart monthlySummary={summary.monthlySummary} />
+          </section>
+
+          <section className="dashboard-panel page-section">
             <h2>Resumo mensal</h2>
 
             {summary.monthlySummary.length === 0 ? (
-              <p>Nenhum lancamento financeiro cadastrado ainda.</p>
+              <p>Nenhum lançamento financeiro cadastrado ainda.</p>
             ) : (
               <ul className="data-list">
                 {summary.monthlySummary.map((month) => (

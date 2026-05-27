@@ -1,5 +1,11 @@
+import type {
+  AuthResponse,
+  LoginData,
+  RegisterData,
+  ResetPasswordData,
+  User,
+} from "../types/auth";
 import { apiClient } from "./apiClient";
-import type { AuthResponse, LoginData, RegisterData, User } from "../types/auth";
 
 export const authService = {
   register(data: RegisterData) {
@@ -16,10 +22,29 @@ export const authService = {
     });
   },
 
-  me(token: string) {
+  me() {
     return apiClient<User>("/auth/me", {
       method: "GET",
-      token,
+    });
+  },
+
+  logout() {
+    return apiClient<null>("/auth/logout", {
+      method: "POST",
+    });
+  },
+
+  forgotPassword(email: string) {
+    return apiClient<{ message: string }>("/auth/forgot-password", {
+      method: "POST",
+      body: { email },
+    });
+  },
+
+  resetPassword(data: ResetPasswordData) {
+    return apiClient<{ message: string }>("/auth/reset-password", {
+      method: "POST",
+      body: data,
     });
   },
 };
