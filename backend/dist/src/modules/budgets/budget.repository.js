@@ -1,5 +1,8 @@
-import { TransactionType } from "@prisma/client";
-import { prisma } from "../../config/prisma";
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.budgetRepository = void 0;
+const client_1 = require("@prisma/client");
+const prisma_1 = require("../../config/prisma");
 function getMonthDateRange(month, year) {
     const startDate = new Date(year, month - 1, 1);
     const endDate = new Date(year, month, 1);
@@ -8,14 +11,14 @@ function getMonthDateRange(month, year) {
         endDate,
     };
 }
-export const budgetRepository = {
+exports.budgetRepository = {
     async create(data) {
-        return prisma.budget.create({
+        return prisma_1.prisma.budget.create({
             data,
         });
     },
     async findMany(userId) {
-        return prisma.budget.findMany({
+        return prisma_1.prisma.budget.findMany({
             where: {
                 userId,
             },
@@ -30,7 +33,7 @@ export const budgetRepository = {
         });
     },
     async findById(id, userId) {
-        return prisma.budget.findFirst({
+        return prisma_1.prisma.budget.findFirst({
             where: {
                 id,
                 userId,
@@ -38,7 +41,7 @@ export const budgetRepository = {
         });
     },
     async findByMonthAndYear({ userId, month, year, }) {
-        return prisma.budget.findUnique({
+        return prisma_1.prisma.budget.findUnique({
             where: {
                 userId_month_year: {
                     userId,
@@ -49,7 +52,7 @@ export const budgetRepository = {
         });
     },
     async update(id, userId, data) {
-        await prisma.budget.updateMany({
+        await prisma_1.prisma.budget.updateMany({
             where: {
                 id,
                 userId,
@@ -59,7 +62,7 @@ export const budgetRepository = {
         return this.findById(id, userId);
     },
     async delete(id, userId) {
-        return prisma.budget.deleteMany({
+        return prisma_1.prisma.budget.deleteMany({
             where: {
                 id,
                 userId,
@@ -68,10 +71,10 @@ export const budgetRepository = {
     },
     async sumExpensesByMonth({ userId, month, year }) {
         const { startDate, endDate } = getMonthDateRange(month, year);
-        return prisma.transaction.aggregate({
+        return prisma_1.prisma.transaction.aggregate({
             where: {
                 userId,
-                type: TransactionType.EXPENSE,
+                type: client_1.TransactionType.EXPENSE,
                 date: {
                     gte: startDate,
                     lt: endDate,

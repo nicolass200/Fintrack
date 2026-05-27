@@ -1,12 +1,15 @@
-import { AppError } from "../../utils/AppError";
-import { CategoryService } from "./category.service";
-const categoryService = new CategoryService();
-export class CategoryController {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.CategoryController = void 0;
+const AppError_1 = require("../../utils/AppError");
+const category_service_1 = require("./category.service");
+const categoryService = new category_service_1.CategoryService();
+class CategoryController {
     async create(request, response) {
         const { name, type } = request.body;
         const userId = request.userId;
         if (!userId) {
-            throw new AppError("Usuário não autenticado", 401);
+            throw new AppError_1.AppError("Usuário não autenticado", 401);
         }
         const category = await categoryService.create({
             name,
@@ -18,7 +21,7 @@ export class CategoryController {
     async list(request, response) {
         const userId = request.userId;
         if (!userId) {
-            throw new AppError("Usuário não autenticado", 401);
+            throw new AppError_1.AppError("Usuário não autenticado", 401);
         }
         const categories = await categoryService.list(userId);
         return response.status(200).json(categories);
@@ -28,10 +31,10 @@ export class CategoryController {
         const { name, type } = request.body;
         const categoryIdParam = request.params.id;
         if (!userId) {
-            throw new AppError("Usuário não autenticado", 401);
+            throw new AppError_1.AppError("Usuário não autenticado", 401);
         }
         if (!categoryIdParam || Array.isArray(categoryIdParam)) {
-            throw new AppError("ID da categoria inválido", 400);
+            throw new AppError_1.AppError("ID da categoria inválido", 400);
         }
         const categoryId = categoryIdParam;
         const category = await categoryService.update({
@@ -46,10 +49,10 @@ export class CategoryController {
         const userId = request.userId;
         const categoryIdParam = request.params.id;
         if (!userId) {
-            throw new AppError("Usuário não autenticado", 401);
+            throw new AppError_1.AppError("Usuário não autenticado", 401);
         }
         if (!categoryIdParam || Array.isArray(categoryIdParam)) {
-            throw new AppError("ID da categoria inválido", 400);
+            throw new AppError_1.AppError("ID da categoria inválido", 400);
         }
         const categoryId = categoryIdParam;
         await categoryService.delete({
@@ -59,3 +62,4 @@ export class CategoryController {
         return response.status(204).send();
     }
 }
+exports.CategoryController = CategoryController;

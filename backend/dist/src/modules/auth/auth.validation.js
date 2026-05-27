@@ -1,30 +1,33 @@
-import { z } from "zod";
-export const registerValidation = z.object({
-    body: z.object({
-        name: z.string().trim().min(2, "Nome deve ter pelo menos 2 caracteres"),
-        email: z.string().trim().email("E-mail invalido"),
-        password: z
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.resetPasswordValidation = exports.forgotPasswordValidation = exports.loginValidation = exports.registerValidation = void 0;
+const zod_1 = require("zod");
+exports.registerValidation = zod_1.z.object({
+    body: zod_1.z.object({
+        name: zod_1.z.string().trim().min(2, "Nome deve ter pelo menos 2 caracteres"),
+        email: zod_1.z.string().trim().email("E-mail invalido"),
+        password: zod_1.z
             .string()
             .min(10, "Senha deve ter pelo menos 10 caracteres"),
     }),
 });
-export const loginValidation = z.object({
-    body: z.object({
-        email: z.string().trim().email("E-mail invalido"),
-        password: z
+exports.loginValidation = zod_1.z.object({
+    body: zod_1.z.object({
+        email: zod_1.z.string().trim().email("E-mail invalido"),
+        password: zod_1.z
             .string()
             .min(10, "Senha deve ter pelo menos 10 caracteres"),
     }),
 });
-export const forgotPasswordValidation = z.object({
-    body: z.object({
-        email: z.string().trim().email("E-mail invalido"),
+exports.forgotPasswordValidation = zod_1.z.object({
+    body: zod_1.z.object({
+        email: zod_1.z.string().trim().email("E-mail invalido"),
     }),
 });
-export const resetPasswordValidation = z.object({
-    body: z.object({
-        token: z.string().trim().min(1, "Token e obrigatorio"),
-        password: z
+exports.resetPasswordValidation = zod_1.z.object({
+    body: zod_1.z.object({
+        token: zod_1.z.string().trim().min(1, "Token e obrigatorio"),
+        password: zod_1.z
             .string()
             .min(10, "Senha deve ter pelo menos 10 caracteres"),
     }),

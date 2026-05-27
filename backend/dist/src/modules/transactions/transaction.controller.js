@@ -1,4 +1,7 @@
-import { transactionService } from "./transaction.service";
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.transactionController = void 0;
+const transaction_service_1 = require("./transaction.service");
 function getAuthenticatedUserId(request) {
     const authRequest = request;
     const userId = authRequest.userId ??
@@ -17,11 +20,11 @@ function getParamId(request) {
     }
     return id;
 }
-export const transactionController = {
+exports.transactionController = {
     async create(request, response, next) {
         try {
             const userId = getAuthenticatedUserId(request);
-            const transaction = await transactionService.create({
+            const transaction = await transaction_service_1.transactionService.create({
                 ...request.body,
                 userId,
             });
@@ -35,7 +38,7 @@ export const transactionController = {
         try {
             const userId = getAuthenticatedUserId(request);
             const query = request.query;
-            const transactions = await transactionService.list(userId, query);
+            const transactions = await transaction_service_1.transactionService.list(userId, query);
             return response.status(200).json(transactions);
         }
         catch (error) {
@@ -46,7 +49,7 @@ export const transactionController = {
         try {
             const userId = getAuthenticatedUserId(request);
             const id = getParamId(request);
-            const transaction = await transactionService.findById({
+            const transaction = await transaction_service_1.transactionService.findById({
                 id,
                 userId,
             });
@@ -60,7 +63,7 @@ export const transactionController = {
         try {
             const userId = getAuthenticatedUserId(request);
             const id = getParamId(request);
-            const transaction = await transactionService.update({
+            const transaction = await transaction_service_1.transactionService.update({
                 id,
                 userId,
                 data: request.body,
@@ -75,7 +78,7 @@ export const transactionController = {
         try {
             const userId = getAuthenticatedUserId(request);
             const id = getParamId(request);
-            await transactionService.delete({
+            await transaction_service_1.transactionService.delete({
                 id,
                 userId,
             });

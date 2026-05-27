@@ -9,7 +9,7 @@
     "dev": "tsx watch src/server.ts",
     "postinstall": "prisma generate",
     "build": "npm run prisma:generate && tsc",
-    "start": "node dist/server.js",
+    "start": "node dist/src/server.js",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev"
   },

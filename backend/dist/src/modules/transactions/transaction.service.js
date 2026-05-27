@@ -1,5 +1,8 @@
-import { AppError } from "../../utils/AppError";
-import { transactionRepository } from "./transaction.repository";
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.transactionService = void 0;
+const AppError_1 = require("../../utils/AppError");
+const transaction_repository_1 = require("./transaction.repository");
 function getMonthDateRange(month, year) {
     if (!month || !year) {
         return {};
@@ -12,22 +15,22 @@ function getMonthDateRange(month, year) {
     };
 }
 async function validateCategory(categoryId, userId, type) {
-    const category = await transactionRepository.findCategoryById(categoryId, userId);
+    const category = await transaction_repository_1.transactionRepository.findCategoryById(categoryId, userId);
     if (!category) {
-        throw new AppError("Categoria nao encontrada", 404);
+        throw new AppError_1.AppError("Categoria nao encontrada", 404);
     }
     if (type && category.type !== type) {
-        throw new AppError("A categoria nao corresponde ao tipo da transacao", 400);
+        throw new AppError_1.AppError("A categoria nao corresponde ao tipo da transacao", 400);
     }
     return category;
 }
 function normalizeOptionalText(value) {
     return value?.trim() || null;
 }
-export const transactionService = {
+exports.transactionService = {
     async create(data) {
         await validateCategory(data.categoryId, data.userId, data.type);
-        return transactionRepository.create({
+        return transaction_repository_1.transactionRepository.create({
             description: data.description,
             amount: data.amount,
             type: data.type,
@@ -41,7 +44,7 @@ export const transactionService = {
     },
     async list(userId, query) {
         const { startDate, endDate } = getMonthDateRange(query.month, query.year);
-        return transactionRepository.findMany({
+        return transaction_repository_1.transactionRepository.findMany({
             userId,
             type: query.type,
             categoryId: query.categoryId,
@@ -52,23 +55,23 @@ export const transactionService = {
         });
     },
     async findById({ id, userId }) {
-        const transaction = await transactionRepository.findById(id, userId);
+        const transaction = await transaction_repository_1.transactionRepository.findById(id, userId);
         if (!transaction) {
-            throw new AppError("Transacao nao encontrada", 404);
+            throw new AppError_1.AppError("Transacao nao encontrada", 404);
         }
         return transaction;
     },
     async update({ id, userId, data, }) {
-        const transaction = await transactionRepository.findById(id, userId);
+        const transaction = await transaction_repository_1.transactionRepository.findById(id, userId);
         if (!transaction) {
-            throw new AppError("Transacao nao encontrada", 404);
+            throw new AppError_1.AppError("Transacao nao encontrada", 404);
         }
         const newType = data.type ?? transaction.type;
         const newCategoryId = data.categoryId ?? transaction.categoryId;
         if (data.categoryId || data.type) {
             await validateCategory(newCategoryId, userId, newType);
         }
-        return transactionRepository.update(id, userId, {
+        return transaction_repository_1.transactionRepository.update(id, userId, {
             description: data.description,
             amount: data.amount,
             type: data.type,
@@ -84,10 +87,10 @@ export const transactionService = {
         });
     },
     async delete({ id, userId }) {
-        const transaction = await transactionRepository.findById(id, userId);
+        const transaction = await transaction_repository_1.transactionRepository.findById(id, userId);
         if (!transaction) {
-            throw new AppError("Transacao nao encontrada", 404);
+            throw new AppError_1.AppError("Transacao nao encontrada", 404);
         }
-        await transactionRepository.delete(id, userId);
+        await transaction_repository_1.transactionRepository.delete(id, userId);
     },
 };

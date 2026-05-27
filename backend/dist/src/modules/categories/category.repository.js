@@ -1,7 +1,10 @@
-import { prisma } from "../../config/prisma";
-export class CategoryRepository {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.CategoryRepository = void 0;
+const prisma_1 = require("../../config/prisma");
+class CategoryRepository {
     async findByNameTypeAndUser(name, type, userId) {
-        return prisma.category.findUnique({
+        return prisma_1.prisma.category.findUnique({
             where: {
                 name_type_userId: {
                     name,
@@ -12,7 +15,7 @@ export class CategoryRepository {
         });
     }
     async findByIdAndUser(id, userId) {
-        return prisma.category.findFirst({
+        return prisma_1.prisma.category.findFirst({
             where: {
                 id,
                 userId,
@@ -20,18 +23,18 @@ export class CategoryRepository {
         });
     }
     async create(data) {
-        return prisma.category.create({
+        return prisma_1.prisma.category.create({
             data,
         });
     }
     async createMany(data) {
-        return prisma.category.createMany({
+        return prisma_1.prisma.category.createMany({
             data,
             skipDuplicates: true,
         });
     }
     async listByUser(userId) {
-        return prisma.category.findMany({
+        return prisma_1.prisma.category.findMany({
             where: {
                 userId,
             },
@@ -41,7 +44,7 @@ export class CategoryRepository {
         });
     }
     async update(data) {
-        await prisma.category.updateMany({
+        await prisma_1.prisma.category.updateMany({
             where: {
                 id: data.id,
                 userId: data.userId,
@@ -54,7 +57,7 @@ export class CategoryRepository {
         return this.findByIdAndUser(data.id, data.userId);
     }
     async countTransactionsByCategoryId(categoryId, userId) {
-        return prisma.transaction.count({
+        return prisma_1.prisma.transaction.count({
             where: {
                 categoryId,
                 userId,
@@ -62,7 +65,7 @@ export class CategoryRepository {
         });
     }
     async delete(id, userId) {
-        return prisma.category.deleteMany({
+        return prisma_1.prisma.category.deleteMany({
             where: {
                 id,
                 userId,
@@ -70,3 +73,4 @@ export class CategoryRepository {
         });
     }
 }
+exports.CategoryRepository = CategoryRepository;

@@ -1,4 +1,7 @@
-import { dashboardService } from "./dashboard.service";
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.dashboardController = void 0;
+const dashboard_service_1 = require("./dashboard.service");
 function getAuthenticatedUserId(request) {
     const authRequest = request;
     const userId = authRequest.userId ??
@@ -10,12 +13,12 @@ function getAuthenticatedUserId(request) {
     }
     return userId;
 }
-export const dashboardController = {
+exports.dashboardController = {
     async summary(request, response, next) {
         try {
             const userId = getAuthenticatedUserId(request);
             const query = request.query;
-            const summary = await dashboardService.getSummary({
+            const summary = await dashboard_service_1.dashboardService.getSummary({
                 userId,
                 month: query.month,
                 year: query.year,

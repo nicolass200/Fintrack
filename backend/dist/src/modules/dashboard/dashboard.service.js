@@ -1,4 +1,7 @@
-import { dashboardRepository } from "./dashboard.repository";
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.dashboardService = void 0;
+const dashboard_repository_1 = require("./dashboard.repository");
 function getMonthDateRange(month, year) {
     if (!month || !year) {
         return {};
@@ -13,10 +16,10 @@ function getMonthDateRange(month, year) {
 function toNumber(value) {
     return Number(value);
 }
-export const dashboardService = {
+exports.dashboardService = {
     async getSummary({ userId, month, year }) {
         const { startDate, endDate } = getMonthDateRange(month, year);
-        const transactions = await dashboardRepository.findTransactionsByUser({
+        const transactions = await dashboard_repository_1.dashboardRepository.findTransactionsByUser({
             userId,
             startDate,
             endDate,

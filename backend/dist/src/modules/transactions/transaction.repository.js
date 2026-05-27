@@ -1,7 +1,10 @@
-import { prisma } from "../../config/prisma";
-export const transactionRepository = {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.transactionRepository = void 0;
+const prisma_1 = require("../../config/prisma");
+exports.transactionRepository = {
     async create(data) {
-        return prisma.transaction.create({
+        return prisma_1.prisma.transaction.create({
             data,
             include: {
                 category: true,
@@ -23,7 +26,7 @@ export const transactionRepository = {
                 },
             }),
         };
-        return prisma.transaction.findMany({
+        return prisma_1.prisma.transaction.findMany({
             where,
             include: {
                 category: true,
@@ -34,7 +37,7 @@ export const transactionRepository = {
         });
     },
     async findById(id, userId) {
-        return prisma.transaction.findFirst({
+        return prisma_1.prisma.transaction.findFirst({
             where: {
                 id,
                 userId,
@@ -45,7 +48,7 @@ export const transactionRepository = {
         });
     },
     async update(id, userId, data) {
-        return prisma.transaction.update({
+        return prisma_1.prisma.transaction.update({
             where: {
                 id,
                 userId,
@@ -57,7 +60,7 @@ export const transactionRepository = {
         });
     },
     async delete(id, userId) {
-        return prisma.transaction.delete({
+        return prisma_1.prisma.transaction.delete({
             where: {
                 id,
                 userId,
@@ -65,7 +68,7 @@ export const transactionRepository = {
         });
     },
     async findCategoryById(categoryId, userId) {
-        return prisma.category.findFirst({
+        return prisma_1.prisma.category.findFirst({
             where: {
                 id: categoryId,
                 userId,

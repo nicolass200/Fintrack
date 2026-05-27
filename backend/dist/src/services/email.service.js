@@ -1,5 +1,9 @@
-import { Resend } from "resend";
-import { AppError } from "../utils/AppError";
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.EmailService = void 0;
+exports.isEmailDeliveryConfigured = isEmailDeliveryConfigured;
+const resend_1 = require("resend");
+const AppError_1 = require("../utils/AppError");
 function getEnv(name) {
     return process.env[name]?.trim();
 }
@@ -12,10 +16,10 @@ function getEmailFrom() {
 function getResendApiKey() {
     return getEnv("RESEND_API_KEY");
 }
-export function isEmailDeliveryConfigured() {
+function isEmailDeliveryConfigured() {
     return Boolean(getResendApiKey() && getEmailFrom());
 }
-export class EmailService {
+class EmailService {
     client = null;
     getClient() {
         if (this.client) {
@@ -23,15 +27,15 @@ export class EmailService {
         }
         const apiKey = getResendApiKey();
         if (!apiKey) {
-            throw new AppError("RESEND_API_KEY not configured", 500);
+            throw new AppError_1.AppError("RESEND_API_KEY not configured", 500);
         }
-        this.client = new Resend(apiKey);
+        this.client = new resend_1.Resend(apiKey);
         return this.client;
     }
     async sendPasswordResetEmail(email, token) {
         const from = getEmailFrom();
         if (!from) {
-            throw new AppError("EMAIL_FROM not configured", 500);
+            throw new AppError_1.AppError("EMAIL_FROM not configured", 500);
         }
         const resetLink = `${getAppUrl().replace(/\/$/, "")}/reset-password?token=${encodeURIComponent(token)}`;
         const result = await this.getClient().emails.send({
@@ -73,7 +77,7 @@ export class EmailService {
       `,
         });
         if (result.error) {
-            throw new AppError(result.error.message, result.error.statusCode || 502);
+            throw new AppError_1.AppError(result.error.message, result.error.statusCode || 502);
         }
         if (process.env.NODE_ENV !== "production") {
             console.log(`[RESEND] password reset email sent: ${result.data?.id ?? "no-id"}`);
@@ -81,3 +85,4 @@ export class EmailService {
         return { resetLink };
     }
 }
+exports.EmailService = EmailService;

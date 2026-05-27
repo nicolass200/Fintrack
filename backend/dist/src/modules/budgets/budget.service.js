@@ -1,5 +1,8 @@
-import { AppError } from "../../utils/AppError";
-import { budgetRepository } from "./budget.repository";
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.budgetService = void 0;
+const AppError_1 = require("../../utils/AppError");
+const budget_repository_1 = require("./budget.repository");
 const NEAR_LIMIT_PERCENTAGE = 80;
 function toNumber(value) {
     return Number(value);
@@ -23,17 +26,17 @@ function calculateBudgetStatus(spentAmount, limitAmount) {
         percentageUsed,
     };
 }
-export const budgetService = {
+exports.budgetService = {
     async create(data) {
-        const existingBudget = await budgetRepository.findByMonthAndYear({
+        const existingBudget = await budget_repository_1.budgetRepository.findByMonthAndYear({
             userId: data.userId,
             month: data.month,
             year: data.year,
         });
         if (existingBudget) {
-            throw new AppError("Ja existe orcamento cadastrado para este mes e ano", 409);
+            throw new AppError_1.AppError("Ja existe orcamento cadastrado para este mes e ano", 409);
         }
-        return budgetRepository.create({
+        return budget_repository_1.budgetRepository.create({
             month: data.month,
             year: data.year,
             limitAmount: data.limitAmount,
@@ -41,41 +44,41 @@ export const budgetService = {
         });
     },
     async list(userId) {
-        return budgetRepository.findMany(userId);
+        return budget_repository_1.budgetRepository.findMany(userId);
     },
     async update({ id, userId, data, }) {
-        const budget = await budgetRepository.findById(id, userId);
+        const budget = await budget_repository_1.budgetRepository.findById(id, userId);
         if (!budget) {
-            throw new AppError("Orcamento nao encontrado", 404);
+            throw new AppError_1.AppError("Orcamento nao encontrado", 404);
         }
         const newMonth = data.month ?? budget.month;
         const newYear = data.year ?? budget.year;
-        const existingBudget = await budgetRepository.findByMonthAndYear({
+        const existingBudget = await budget_repository_1.budgetRepository.findByMonthAndYear({
             userId,
             month: newMonth,
             year: newYear,
         });
         if (existingBudget && existingBudget.id !== id) {
-            throw new AppError("Ja existe orcamento cadastrado para este mes e ano", 409);
+            throw new AppError_1.AppError("Ja existe orcamento cadastrado para este mes e ano", 409);
         }
-        return budgetRepository.update(id, userId, {
+        return budget_repository_1.budgetRepository.update(id, userId, {
             month: data.month,
             year: data.year,
             limitAmount: data.limitAmount,
         });
     },
     async delete({ id, userId }) {
-        const budget = await budgetRepository.findById(id, userId);
+        const budget = await budget_repository_1.budgetRepository.findById(id, userId);
         if (!budget) {
-            throw new AppError("Orcamento nao encontrado", 404);
+            throw new AppError_1.AppError("Orcamento nao encontrado", 404);
         }
-        await budgetRepository.delete(id, userId);
+        await budget_repository_1.budgetRepository.delete(id, userId);
     },
     async getAlerts(userId, query) {
         if (!query.month || !query.year) {
-            throw new AppError("Mes e ano sao obrigatorios para consultar alertas", 400);
+            throw new AppError_1.AppError("Mes e ano sao obrigatorios para consultar alertas", 400);
         }
-        const budget = await budgetRepository.findByMonthAndYear({
+        const budget = await budget_repository_1.budgetRepository.findByMonthAndYear({
             userId,
             month: query.month,
             year: query.year,
@@ -93,7 +96,7 @@ export const budgetService = {
                 percentageUsed: 0,
             };
         }
-        const expenses = await budgetRepository.sumExpensesByMonth({
+        const expenses = await budget_repository_1.budgetRepository.sumExpensesByMonth({
             userId,
             month: query.month,
             year: query.year,

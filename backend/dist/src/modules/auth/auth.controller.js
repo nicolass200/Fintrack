@@ -1,7 +1,10 @@
-import { AuthService } from "./auth.service";
-import { AUTH_COOKIE_NAME, getAuthCookieOptions } from "./auth.cookies";
-const authService = new AuthService();
-export class AuthController {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.AuthController = void 0;
+const auth_service_1 = require("./auth.service");
+const auth_cookies_1 = require("./auth.cookies");
+const authService = new auth_service_1.AuthService();
+class AuthController {
     async register(request, response) {
         const { name, email, password } = request.body;
         const result = await authService.register({
@@ -9,7 +12,7 @@ export class AuthController {
             email,
             password,
         });
-        response.cookie(AUTH_COOKIE_NAME, result.token, getAuthCookieOptions());
+        response.cookie(auth_cookies_1.AUTH_COOKIE_NAME, result.token, (0, auth_cookies_1.getAuthCookieOptions)());
         return response.status(201).json({
             user: result.user,
         });
@@ -20,7 +23,7 @@ export class AuthController {
             email,
             password,
         });
-        response.cookie(AUTH_COOKIE_NAME, result.token, getAuthCookieOptions());
+        response.cookie(auth_cookies_1.AUTH_COOKIE_NAME, result.token, (0, auth_cookies_1.getAuthCookieOptions)());
         return response.status(200).json({
             user: result.user,
         });
@@ -49,7 +52,8 @@ export class AuthController {
         return response.status(200).json(result);
     }
     async logout(request, response) {
-        response.clearCookie(AUTH_COOKIE_NAME, getAuthCookieOptions());
+        response.clearCookie(auth_cookies_1.AUTH_COOKIE_NAME, (0, auth_cookies_1.getAuthCookieOptions)());
         return response.status(204).send();
     }
 }
+exports.AuthController = AuthController;

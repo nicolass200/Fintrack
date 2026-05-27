@@ -1,7 +1,10 @@
-import { prisma } from "../../config/prisma";
-export const dashboardRepository = {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.dashboardRepository = void 0;
+const prisma_1 = require("../../config/prisma");
+exports.dashboardRepository = {
     async findTransactionsByUser({ userId, startDate, endDate, }) {
-        return prisma.transaction.findMany({
+        return prisma_1.prisma.transaction.findMany({
             where: {
                 userId,
                 ...(startDate &&

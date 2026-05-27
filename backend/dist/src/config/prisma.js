@@ -1,15 +1,18 @@
-import "dotenv/config";
-import { PrismaClient } from "@prisma/client";
-import { PrismaPg } from "@prisma/adapter-pg";
-import { Pool } from "pg";
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.prisma = void 0;
+require("dotenv/config");
+const client_1 = require("@prisma/client");
+const adapter_pg_1 = require("@prisma/adapter-pg");
+const pg_1 = require("pg");
 const connectionString = process.env.DATABASE_URL;
 if (!connectionString) {
     throw new Error("DATABASE_URL não configurada");
 }
-const pool = new Pool({
+const pool = new pg_1.Pool({
     connectionString,
 });
-const adapter = new PrismaPg(pool);
-export const prisma = new PrismaClient({
+const adapter = new adapter_pg_1.PrismaPg(pool);
+exports.prisma = new client_1.PrismaClient({
     adapter,
 });

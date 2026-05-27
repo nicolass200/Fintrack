@@ -1,4 +1,7 @@
-import { budgetService } from "./budget.service";
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.budgetController = void 0;
+const budget_service_1 = require("./budget.service");
 function getAuthenticatedUserId(request) {
     const authRequest = request;
     const userId = authRequest.userId ??
@@ -17,11 +20,11 @@ function getParamId(request) {
     }
     return id;
 }
-export const budgetController = {
+exports.budgetController = {
     async create(request, response, next) {
         try {
             const userId = getAuthenticatedUserId(request);
-            const budget = await budgetService.create({
+            const budget = await budget_service_1.budgetService.create({
                 ...request.body,
                 userId,
             });
@@ -34,7 +37,7 @@ export const budgetController = {
     async list(request, response, next) {
         try {
             const userId = getAuthenticatedUserId(request);
-            const budgets = await budgetService.list(userId);
+            const budgets = await budget_service_1.budgetService.list(userId);
             return response.status(200).json(budgets);
         }
         catch (error) {
@@ -45,7 +48,7 @@ export const budgetController = {
         try {
             const userId = getAuthenticatedUserId(request);
             const id = getParamId(request);
-            const budget = await budgetService.update({
+            const budget = await budget_service_1.budgetService.update({
                 id,
                 userId,
                 data: request.body,
@@ -60,7 +63,7 @@ export const budgetController = {
         try {
             const userId = getAuthenticatedUserId(request);
             const id = getParamId(request);
-            await budgetService.delete({
+            await budget_service_1.budgetService.delete({
                 id,
                 userId,
             });
@@ -79,7 +82,7 @@ export const budgetController = {
             const year = request.query.year
                 ? Number(request.query.year)
                 : undefined;
-            const alerts = await budgetService.getAlerts(userId, {
+            const alerts = await budget_service_1.budgetService.getAlerts(userId, {
                 month,
                 year,
             });

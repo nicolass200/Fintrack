@@ -1,5 +1,9 @@
-export const AUTH_COOKIE_NAME = "fintrack_session";
-export function getAuthCookieOptions() {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.AUTH_COOKIE_NAME = void 0;
+exports.getAuthCookieOptions = getAuthCookieOptions;
+exports.AUTH_COOKIE_NAME = "fintrack_session";
+function getAuthCookieOptions() {
     const isProduction = process.env.NODE_ENV === "production";
     return {
         httpOnly: true,
