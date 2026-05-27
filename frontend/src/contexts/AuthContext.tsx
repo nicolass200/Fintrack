@@ -64,6 +64,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     try {
       await authService.logout();
     } catch {
+      // A sessao local ainda deve ser encerrada se o servidor ja limpou o cookie.
     } finally {
       setUser(null);
       setToken(null);

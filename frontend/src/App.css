@@ -2347,3 +2347,142 @@ select:focus-visible {
     animation-iteration-count: 1 !important;
   }
 }
+
+/* --- Production polish: layout foundation, navigation and responsive rhythm --- */
+#root {
+  width: 100%;
+  min-height: 100vh;
+}
+
+.app-shell {
+  width: 100%;
+  min-height: 100vh;
+}
+
+.app-nav a {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.app-nav a svg {
+  flex: 0 0 auto;
+  opacity: 0.86;
+}
+
+.app-nav a.active svg {
+  opacity: 1;
+}
+
+.bottom-nav a span {
+  display: grid;
+  place-items: center;
+}
+
+.bottom-nav svg {
+  width: 21px;
+  height: 21px;
+}
+
+.bottom-nav .bottom-nav-add svg {
+  width: 26px;
+  height: 26px;
+}
+
+.dashboard-header,
+.summary-grid,
+.dashboard-grid,
+.content-grid,
+.page-section,
+.dashboard-placeholder,
+.profile-grid {
+  margin-right: auto;
+  margin-left: auto;
+}
+
+.dashboard-header {
+  align-items: flex-start;
+}
+
+.dashboard-header h1,
+.auth-header h1 {
+  margin-bottom: 0;
+}
+
+.dashboard-header p,
+.auth-header p,
+.dashboard-panel p,
+.dashboard-placeholder p {
+  text-align: left;
+}
+
+.auth-card {
+  text-align: left;
+}
+
+.auth-footer {
+  line-height: 1.5;
+}
+
+.data-list li {
+  text-align: left;
+}
+
+.list-item-with-actions > div:first-child {
+  flex: 1 1 auto;
+}
+
+.transaction-actions {
+  flex: 0 0 auto;
+  text-align: right;
+}
+
+.row-actions button,
+.outline-button,
+.secondary-button,
+.logout-button,
+.filter-actions button,
+.auth-form button {
+  touch-action: manipulation;
+}
+
+.empty-state,
+.dashboard-panel > p {
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+@media (max-width: 900px) {
+  .app-shell {
+    min-height: 100svh;
+  }
+
+  .dashboard-header,
+  .summary-grid,
+  .dashboard-grid,
+  .content-grid,
+  .page-section,
+  .dashboard-placeholder,
+  .profile-grid {
+    max-width: 100%;
+  }
+
+  .transaction-actions {
+    text-align: left;
+  }
+}
+
+@media (max-width: 420px) {
+  .bottom-nav {
+    padding-right: 6px;
+    padding-left: 6px;
+  }
+
+  .bottom-nav a {
+    gap: 2px;
+  }
+
+  .bottom-nav a small {
+    font-size: 0.62rem;
+  }
+}

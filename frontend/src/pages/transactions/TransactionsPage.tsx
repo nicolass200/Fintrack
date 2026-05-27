@@ -25,7 +25,7 @@ const paymentMethodOptions = [
   "Cartão de débito",
   "Cartão de crédito",
   "Boleto",
-  "Transferencia",
+  "Transferência",
   "Outro",
 ];
 

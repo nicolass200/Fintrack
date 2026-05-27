@@ -16,20 +16,28 @@ export async function apiClient<T>(
   const shouldSendAuthorizationHeader =
     Boolean(token) && token !== COOKIE_AUTH_MARKER;
 
-  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-    method,
-    credentials: "include",
-    headers: {
-      "Content-Type": "application/json",
-      ...(shouldSendAuthorizationHeader
-        ? { Authorization: `Bearer ${token}` }
-        : {}),
-    },
-    body: body ? JSON.stringify(body) : undefined,
-  });
+  let response: Response;
+
+  try {
+    response = await fetch(`${API_BASE_URL}${endpoint}`, {
+      method,
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+        ...(shouldSendAuthorizationHeader
+          ? { Authorization: `Bearer ${token}` }
+          : {}),
+      },
+      body: body ? JSON.stringify(body) : undefined,
+    });
+  } catch {
+    throw new Error(
+      "Não foi possível conectar à API. Verifique a URL do backend e o CORS."
+    );
+  }
 
   if (!response.ok) {
-    let errorMessage = "Erro na requisicao";
+    let errorMessage = "Erro na requisição";
 
     try {
       const errorData = await response.json();

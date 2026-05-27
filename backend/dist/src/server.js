@@ -13,9 +13,18 @@ const routes_1 = require("./routes");
 const errorHandler_1 = require("./middlewares/errorHandler");
 dotenv_1.default.config();
 const app = (0, express_1.default)();
+function normalizeOrigin(origin) {
+    try {
+        return new URL(origin).origin;
+    }
+    catch {
+        return origin.replace(/\/+$/, "");
+    }
+}
 function getAllowedOrigins() {
     const configuredOrigins = process.env.CORS_ORIGIN?.split(",")
         .map((origin) => origin.trim())
+        .map(normalizeOrigin)
         .filter(Boolean) ?? [];
     if (configuredOrigins.length > 0) {
         return configuredOrigins;
@@ -33,7 +42,7 @@ app.use((0, helmet_1.default)({
 }));
 app.use((0, cors_1.default)({
     origin(origin, callback) {
-        if (!origin || allowedOrigins.has(origin)) {
+        if (!origin || allowedOrigins.has(normalizeOrigin(origin))) {
             return callback(null, true);
         }
         return callback(new Error("CORS origin not allowed"));

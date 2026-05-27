@@ -18,7 +18,7 @@ export function ProfilePage() {
         month: "long",
         year: "numeric",
       }).format(new Date(user.createdAt))
-    : "Disponível após novo login";
+    : "Disponível após o próximo login";
 
   return (
     <main className="dashboard-page">
@@ -36,7 +36,7 @@ export function ProfilePage() {
             <span className="profile-avatar">{initials}</span>
             <div>
               <h2>{user?.name || "Usuário FinTrack"}</h2>
-              <p>{user?.email || "E-mail nao disponivel"}</p>
+              <p>{user?.email || "E-mail não disponível"}</p>
             </div>
           </div>
 
@@ -64,7 +64,7 @@ export function ProfilePage() {
 
         <aside className="profile-side-stack">
           <article className="dashboard-panel profile-panel">
-            <h2>Seguranca</h2>
+            <h2>Segurança</h2>
             <p>
               Sua conta usa login protegido por senha. Caso precise trocar o
               acesso, use a recuperação de senha.

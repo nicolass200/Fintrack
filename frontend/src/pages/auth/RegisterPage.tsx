@@ -39,7 +39,7 @@ export function RegisterPage() {
         <div className="auth-header">
           <span className="app-badge">FinTrack</span>
           <h1>Criar conta</h1>
-          <p>Comece a organizar suas receitas, despesas e orcamento mensal.</p>
+          <p>Comece a organizar suas receitas, despesas e orçamento mensal.</p>
         </div>
 
         <form onSubmit={handleSubmit} className="auth-form">
@@ -88,7 +88,7 @@ export function RegisterPage() {
         </form>
 
         <p className="auth-footer">
-          Ja tem conta? <Link to="/login">Entrar</Link>
+          Já tem conta? <Link to="/login">Entrar</Link>
         </p>
       </section>
     </main>

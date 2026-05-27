@@ -1,12 +1,19 @@
 import { NavLink, Outlet } from "react-router-dom";
+import {
+  CirclePlus,
+  Home,
+  ReceiptText,
+  UserCircle,
+  WalletCards,
+} from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
 
 const navigationItems = [
-  { to: "/dashboard", label: "Início", icon: "In", end: false },
-  { to: "/transactions", label: "Extrato", icon: "Ex", end: true },
-  { to: "/transactions/new", label: "Adicionar", icon: "+", end: false },
-  { to: "/budgets", label: "Orçamentos", icon: "$", end: false },
-  { to: "/profile", label: "Perfil", icon: "Eu", end: false },
+  { to: "/dashboard", label: "Início", Icon: Home, end: false },
+  { to: "/transactions", label: "Extrato", Icon: ReceiptText, end: true },
+  { to: "/transactions/new", label: "Adicionar", Icon: CirclePlus, end: false },
+  { to: "/budgets", label: "Orçamentos", Icon: WalletCards, end: false },
+  { to: "/profile", label: "Perfil", Icon: UserCircle, end: false },
 ];
 
 export function AppLayout() {
@@ -23,6 +30,7 @@ export function AppLayout() {
         <nav className="app-nav">
           {navigationItems.map((item) => (
             <NavLink key={item.to} to={item.to} end={item.end}>
+              <item.Icon aria-hidden="true" size={18} strokeWidth={2.2} />
               {item.label}
             </NavLink>
           ))}
@@ -46,7 +54,9 @@ export function AppLayout() {
             className={item.to === "/transactions/new" ? "bottom-nav-add" : ""}
             aria-label={item.label}
           >
-            <span>{item.icon}</span>
+            <span>
+              <item.Icon aria-hidden="true" size={22} strokeWidth={2.3} />
+            </span>
             <small>{item.label}</small>
           </NavLink>
         ))}

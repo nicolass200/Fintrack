@@ -24,7 +24,7 @@ export function ForgotPasswordPage() {
       setError(
         err instanceof Error
           ? err.message
-          : "Erro ao solicitar recuperacao de senha"
+          : "Erro ao solicitar recuperação de senha"
       );
     } finally {
       setIsSubmitting(false);
@@ -37,7 +37,7 @@ export function ForgotPasswordPage() {
         <div className="auth-header">
           <span className="app-badge">FinTrack</span>
           <h1>Recuperar senha</h1>
-          <p>Digite seu e-mail para receber um codigo de redefinicao.</p>
+          <p>Digite seu e-mail para receber um código de redefinição.</p>
         </div>
 
         {!message ? (
@@ -57,7 +57,7 @@ export function ForgotPasswordPage() {
             {error && <p className="form-error">{error}</p>}
 
             <button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? "Enviando..." : "Enviar codigo"}
+              {isSubmitting ? "Enviando..." : "Enviar código"}
             </button>
           </form>
         ) : (

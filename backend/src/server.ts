@@ -11,10 +11,19 @@ dotenv.config();
 
 const app = express();
 
+function normalizeOrigin(origin: string) {
+  try {
+    return new URL(origin).origin;
+  } catch {
+    return origin.replace(/\/+$/, "");
+  }
+}
+
 function getAllowedOrigins() {
   const configuredOrigins =
     process.env.CORS_ORIGIN?.split(",")
       .map((origin) => origin.trim())
+      .map(normalizeOrigin)
       .filter(Boolean) ?? [];
 
   if (configuredOrigins.length > 0) {
@@ -42,7 +51,7 @@ app.use(
 app.use(
   cors({
     origin(origin, callback) {
-      if (!origin || allowedOrigins.has(origin)) {
+      if (!origin || allowedOrigins.has(normalizeOrigin(origin))) {
         return callback(null, true);
       }
 
