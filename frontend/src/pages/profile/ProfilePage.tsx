@@ -1,11 +1,12 @@
 import { Link } from "react-router-dom";
+import { useState } from "react";
+import type { FormEvent } from "react";
 import { useAuth } from "../../hooks/useAuth";
 import { useLanguage } from "../../hooks/useLanguage";
 import type { Language } from "../../contexts/languageContext";
 
 const profileText = {
   pt: {
-    online: "Sistema online",
     title: "Perfil e configurações",
     subtitle: "Consulte seus dados de conta e acesse as principais ações.",
     fallbackUser: "Usuário FinTrack",
@@ -14,6 +15,13 @@ const profileText = {
     email: "E-mail",
     createdAt: "Conta criada em",
     createdFallback: "Disponível após o próximo login",
+    editNameTitle: "Editar perfil",
+    editNameDescription: "Atualize o nome exibido no sistema.",
+    namePlaceholder: "Seu nome",
+    savingProfile: "Salvando...",
+    saveProfile: "Salvar nome",
+    profileSaved: "Perfil atualizado com sucesso.",
+    profileSaveError: "Erro ao atualizar perfil",
     signOut: "Sair",
     securityTitle: "Segurança",
     securityDescription:
@@ -30,7 +38,6 @@ const profileText = {
     english: "Inglês",
   },
   en: {
-    online: "System online",
     title: "Profile and settings",
     subtitle: "Review your account details and access key actions.",
     fallbackUser: "FinTrack user",
@@ -39,6 +46,13 @@ const profileText = {
     email: "Email",
     createdAt: "Account created on",
     createdFallback: "Available after the next login",
+    editNameTitle: "Edit profile",
+    editNameDescription: "Update the name shown in the system.",
+    namePlaceholder: "Your name",
+    savingProfile: "Saving...",
+    saveProfile: "Save name",
+    profileSaved: "Profile updated successfully.",
+    profileSaveError: "Error updating profile",
     signOut: "Sign out",
     securityTitle: "Security",
     securityDescription:
@@ -57,9 +71,32 @@ const profileText = {
 };
 
 export function ProfilePage() {
-  const { user, logout } = useAuth();
+  const { user, logout, updateProfile } = useAuth();
   const { language, setLanguage } = useLanguage();
   const t = profileText[language];
+  const [name, setName] = useState(user?.name ?? "");
+  const [profileMessage, setProfileMessage] = useState("");
+  const [profileError, setProfileError] = useState("");
+  const [isSavingProfile, setIsSavingProfile] = useState(false);
+
+  async function handleProfileSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setProfileMessage("");
+    setProfileError("");
+    setIsSavingProfile(true);
+
+    try {
+      await updateProfile({ name });
+      setProfileMessage(t.profileSaved);
+    } catch (err) {
+      setProfileError(
+        err instanceof Error ? err.message : t.profileSaveError
+      );
+    } finally {
+      setIsSavingProfile(false);
+    }
+  }
+
   const initials =
     user?.name
       .split(" ")
@@ -79,9 +116,8 @@ export function ProfilePage() {
 
   return (
     <main className="dashboard-page">
-      <header className="dashboard-header" data-status={t.online}>
+      <header className="dashboard-header">
         <div>
-          <span className="app-badge">FinTrack</span>
           <h1>{t.title}</h1>
           <p>{t.subtitle}</p>
         </div>
@@ -113,6 +149,33 @@ export function ProfilePage() {
               <dd>{createdAt}</dd>
             </div>
           </dl>
+
+          <form className="profile-edit-form" onSubmit={handleProfileSubmit}>
+            <div>
+              <h3>{t.editNameTitle}</h3>
+              <p>{t.editNameDescription}</p>
+            </div>
+
+            <label>
+              {t.name}
+              <input
+                type="text"
+                placeholder={t.namePlaceholder}
+                value={name}
+                minLength={2}
+                maxLength={80}
+                onChange={(event) => setName(event.target.value)}
+                required
+              />
+            </label>
+
+            {profileMessage && <p className="form-success">{profileMessage}</p>}
+            {profileError && <p className="form-error">{profileError}</p>}
+
+            <button type="submit" disabled={isSavingProfile}>
+              {isSavingProfile ? t.savingProfile : t.saveProfile}
+            </button>
+          </form>
 
           <button type="button" className="logout-button" onClick={logout}>
             {t.signOut}

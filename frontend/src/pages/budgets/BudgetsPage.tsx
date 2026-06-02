@@ -7,13 +7,11 @@ import type { Budget, BudgetAlert, BudgetAlertStatus } from "../../types/budget"
 
 const budgetText = {
   pt: {
-    online: "Sistema online",
     title: "Orçamentos",
     subtitle: "Controle o limite mensal e acompanhe alertas de gastos.",
     editBudget: "Editar orçamento",
     newBudget: "Novo orçamento",
-    month: "Mês",
-    year: "Ano",
+    budgetPeriod: "Mês do orçamento",
     monthlyLimit: "Limite mensal",
     monthlyLimitPlaceholder: "Ex: 1000.00",
     saving: "Salvando...",
@@ -25,7 +23,7 @@ const budgetText = {
     checkAlert: "Consultar alerta",
     used: "usado",
     limit: "Limite",
-    spent: "Gasto",
+    spent: "Despesas",
     remaining: "Restante",
     registeredBudgets: "Orçamentos cadastrados",
     loadingBudgets: "Carregando orçamentos...",
@@ -51,13 +49,11 @@ const budgetText = {
     },
   },
   en: {
-    online: "System online",
     title: "Budgets",
     subtitle: "Control monthly limits and track spending alerts.",
     editBudget: "Edit budget",
     newBudget: "New budget",
-    month: "Month",
-    year: "Year",
+    budgetPeriod: "Budget month",
     monthlyLimit: "Monthly limit",
     monthlyLimitPlaceholder: "Ex: 1000.00",
     saving: "Saving...",
@@ -115,6 +111,31 @@ function getCurrentYear() {
   return new Date().getFullYear();
 }
 
+function formatMonthValue(month: number, year: number) {
+  return `${year}-${String(month).padStart(2, "0")}`;
+}
+
+function getCurrentMonthValue() {
+  return formatMonthValue(getCurrentMonth(), getCurrentYear());
+}
+
+function parseMonthValue(value: string) {
+  const [year, month] = value.split("-").map(Number);
+
+  return {
+    month,
+    year,
+  };
+}
+
+function formatBudgetPeriod(month: number, year: number, language: "pt" | "en") {
+  return new Intl.DateTimeFormat(getLocale(language), {
+    month: "long",
+    year: "numeric",
+    timeZone: "UTC",
+  }).format(new Date(Date.UTC(year, month - 1, 1)));
+}
+
 function getStatusLabel(
   status: BudgetAlertStatus,
   t: (typeof budgetText)["pt"]
@@ -130,12 +151,10 @@ export function BudgetsPage() {
   const [budgets, setBudgets] = useState<Budget[]>([]);
   const [alert, setAlert] = useState<BudgetAlert | null>(null);
 
-  const [month, setMonth] = useState(String(getCurrentMonth()));
-  const [year, setYear] = useState(String(getCurrentYear()));
+  const [budgetPeriod, setBudgetPeriod] = useState(getCurrentMonthValue());
   const [limitAmount, setLimitAmount] = useState("");
 
-  const [alertMonth, setAlertMonth] = useState(String(getCurrentMonth()));
-  const [alertYear, setAlertYear] = useState(String(getCurrentYear()));
+  const [alertPeriod, setAlertPeriod] = useState(getCurrentMonthValue());
 
   const [editingBudget, setEditingBudget] = useState<Budget | null>(null);
 
@@ -203,8 +222,7 @@ export function BudgetsPage() {
   }, [token, t.loadError]);
 
   function resetForm() {
-    setMonth(String(getCurrentMonth()));
-    setYear(String(getCurrentYear()));
+    setBudgetPeriod(getCurrentMonthValue());
     setLimitAmount("");
     setEditingBudget(null);
   }
@@ -220,9 +238,10 @@ export function BudgetsPage() {
     setError("");
 
     try {
+      const { month, year } = parseMonthValue(budgetPeriod);
       const payload = {
-        month: Number(month),
-        year: Number(year),
+        month,
+        year,
         limitAmount: Number(limitAmount),
       };
 
@@ -243,8 +262,7 @@ export function BudgetsPage() {
 
   function handleEdit(budget: Budget) {
     setEditingBudget(budget);
-    setMonth(String(budget.month));
-    setYear(String(budget.year));
+    setBudgetPeriod(formatMonthValue(budget.month, budget.year));
     setLimitAmount(String(budget.limitAmount));
   }
 
@@ -280,10 +298,11 @@ export function BudgetsPage() {
     setError("");
 
     try {
+      const { month, year } = parseMonthValue(alertPeriod);
       const data = await budgetService.alerts(
         token,
-        Number(alertMonth),
-        Number(alertYear)
+        month,
+        year
       );
 
       setAlert(data);
@@ -296,9 +315,8 @@ export function BudgetsPage() {
 
   return (
     <main className="dashboard-page">
-      <header className="dashboard-header" data-status={t.online}>
+      <header className="dashboard-header">
         <div>
-          <span className="app-badge">FinTrack</span>
           <h1>{t.title}</h1>
           <p>{t.subtitle}</p>
         </div>
@@ -310,24 +328,11 @@ export function BudgetsPage() {
 
           <form className="auth-form" onSubmit={handleSubmit}>
             <label>
-              {t.month}
+              {t.budgetPeriod}
               <input
-                type="number"
-                min="1"
-                max="12"
-                value={month}
-                onChange={(event) => setMonth(event.target.value)}
-                required
-              />
-            </label>
-
-            <label>
-              {t.year}
-              <input
-                type="number"
-                min="2000"
-                value={year}
-                onChange={(event) => setYear(event.target.value)}
+                type="month"
+                value={budgetPeriod}
+                onChange={(event) => setBudgetPeriod(event.target.value)}
                 required
               />
             </label>
@@ -372,24 +377,11 @@ export function BudgetsPage() {
 
           <form className="filter-form" onSubmit={handleSearchAlert}>
             <label>
-              {t.month}
+              {t.budgetPeriod}
               <input
-                type="number"
-                min="1"
-                max="12"
-                value={alertMonth}
-                onChange={(event) => setAlertMonth(event.target.value)}
-                required
-              />
-            </label>
-
-            <label>
-              {t.year}
-              <input
-                type="number"
-                min="2000"
-                value={alertYear}
-                onChange={(event) => setAlertYear(event.target.value)}
+                type="month"
+                value={alertPeriod}
+                onChange={(event) => setAlertPeriod(event.target.value)}
                 required
               />
             </label>
@@ -442,7 +434,7 @@ export function BudgetsPage() {
               <li key={budget.id} className="list-item-with-actions">
                 <div>
                   <strong>
-                    {budget.month}/{budget.year}
+                    {formatBudgetPeriod(budget.month, budget.year, language)}
                   </strong>
                   <span>
                     {t.limit}: {formatCurrency(budget.limitAmount, language)}

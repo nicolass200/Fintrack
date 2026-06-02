@@ -20,6 +20,13 @@ const optionalBooleanQuerySchema = z
     return value === "true";
   });
 
+const optionalDateQuerySchema = z
+  .string()
+  .optional()
+  .refine((value) => value === undefined || !Number.isNaN(Date.parse(value)), {
+    message: "Data invalida",
+  });
+
 export const createTransactionSchema = z.object({
   body: z.object({
     description: z
@@ -123,6 +130,10 @@ export const listTransactionsSchema = z.object({
       .refine((value) => value === undefined || value >= 2000, {
         message: "Ano invalido",
       }),
+
+    startDate: optionalDateQuerySchema,
+
+    endDate: optionalDateQuerySchema,
 
     type: transactionTypeSchema.optional(),
 

@@ -33,3 +33,13 @@ export const resetPasswordValidation = z.object({
       .min(10, "Senha deve ter pelo menos 10 caracteres"),
   }),
 });
+
+export const updateProfileValidation = z.object({
+  body: z.object({
+    name: z
+      .string()
+      .trim()
+      .min(2, "Nome deve ter pelo menos 2 caracteres")
+      .max(80, "Nome deve ter no maximo 80 caracteres"),
+  }),
+});

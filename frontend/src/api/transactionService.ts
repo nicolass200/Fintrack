@@ -17,6 +17,14 @@ function buildTransactionQuery(filters: TransactionFilters) {
     params.append("year", filters.year);
   }
 
+  if (filters.startDate) {
+    params.append("startDate", filters.startDate);
+  }
+
+  if (filters.endDate) {
+    params.append("endDate", filters.endDate);
+  }
+
   if (filters.type) {
     params.append("type", filters.type);
   }

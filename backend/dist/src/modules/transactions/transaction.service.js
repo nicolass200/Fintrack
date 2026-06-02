@@ -14,6 +14,21 @@ function getMonthDateRange(month, year) {
         endDate,
     };
 }
+function getDateRange(query) {
+    if (!query.startDate && !query.endDate) {
+        return getMonthDateRange(query.month, query.year);
+    }
+    const range = {};
+    if (query.startDate) {
+        range.startDate = new Date(query.startDate);
+    }
+    if (query.endDate) {
+        const endDate = new Date(query.endDate);
+        endDate.setUTCDate(endDate.getUTCDate() + 1);
+        range.endDate = endDate;
+    }
+    return range;
+}
 async function validateCategory(categoryId, userId, type) {
     const category = await transaction_repository_1.transactionRepository.findCategoryById(categoryId, userId);
     if (!category) {
@@ -43,7 +58,7 @@ exports.transactionService = {
         });
     },
     async list(userId, query) {
-        const { startDate, endDate } = getMonthDateRange(query.month, query.year);
+        const { startDate, endDate } = getDateRange(query);
         return transaction_repository_1.transactionRepository.findMany({
             userId,
             type: query.type,

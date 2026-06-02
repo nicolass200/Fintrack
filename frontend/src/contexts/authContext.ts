@@ -1,5 +1,10 @@
 import { createContext } from "react";
-import type { LoginData, RegisterData, User } from "../types/auth";
+import type {
+  LoginData,
+  RegisterData,
+  UpdateProfileData,
+  User,
+} from "../types/auth";
 
 export type AuthContextData = {
   user: User | null;
@@ -8,6 +13,7 @@ export type AuthContextData = {
   isLoading: boolean;
   login: (data: LoginData) => Promise<void>;
   register: (data: RegisterData) => Promise<void>;
+  updateProfile: (data: UpdateProfileData) => Promise<void>;
   logout: () => Promise<void>;
 };
 

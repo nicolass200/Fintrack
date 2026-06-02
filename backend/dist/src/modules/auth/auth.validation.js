@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.resetPasswordValidation = exports.forgotPasswordValidation = exports.loginValidation = exports.registerValidation = void 0;
+exports.updateProfileValidation = exports.resetPasswordValidation = exports.forgotPasswordValidation = exports.loginValidation = exports.registerValidation = void 0;
 const zod_1 = require("zod");
 exports.registerValidation = zod_1.z.object({
     body: zod_1.z.object({
@@ -30,5 +30,14 @@ exports.resetPasswordValidation = zod_1.z.object({
         password: zod_1.z
             .string()
             .min(10, "Senha deve ter pelo menos 10 caracteres"),
+    }),
+});
+exports.updateProfileValidation = zod_1.z.object({
+    body: zod_1.z.object({
+        name: zod_1.z
+            .string()
+            .trim()
+            .min(2, "Nome deve ter pelo menos 2 caracteres")
+            .max(80, "Nome deve ter no maximo 80 caracteres"),
     }),
 });

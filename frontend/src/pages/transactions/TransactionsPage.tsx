@@ -9,17 +9,16 @@ import type { Transaction, TransactionFilters } from "../../types/transaction";
 
 const transactionText = {
   pt: {
-    online: "Sistema online",
     addTitle: "Adicionar",
     statementTitle: "Extrato",
-    addSubtitle: "Cadastre um novo gasto ou ganho.",
-    statementSubtitle: "Acompanhe seus gastos, ganhos e pendências financeiras.",
+    addSubtitle: "Cadastre uma nova despesa ou receita.",
+    statementSubtitle: "Acompanhe suas despesas, receitas e pendências financeiras.",
     editEntry: "Editar lançamento",
-    newExpense: "Novo gasto",
-    newIncome: "Novo ganho",
+    newExpense: "Nova despesa",
+    newIncome: "Nova receita",
     entryType: "Tipo de lançamento",
-    expense: "Gasto",
-    income: "Ganho",
+    expense: "Despesa",
+    income: "Receita",
     description: "Descrição",
     descriptionPlaceholder: "Ex: Mercado",
     amount: "Valor",
@@ -43,15 +42,16 @@ const transactionText = {
     createTransaction: "Criar transação",
     cancelEdit: "Cancelar edição",
     filters: "Filtros",
-    month: "Mês",
-    year: "Ano",
+    startDate: "Data inicial",
+    endDate: "Data final",
     movement: "Movimento",
     all: "Todos",
     allFemale: "Todas",
-    expenses: "Gastos",
-    incomes: "Ganhos",
+    expenses: "Despesas",
+    incomes: "Receitas",
     status: "Status",
-    settled: "Pagos/recebidos",
+    receivedFilter: "Recebidos",
+    paidFilter: "Pagos",
     pending: "Pendentes",
     applyFilters: "Aplicar filtros",
     clear: "Limpar",
@@ -69,9 +69,9 @@ const transactionText = {
     saveTransactionError: "Erro ao salvar transação",
     createCategoryError: "Erro ao criar categoria",
     deleteTransactionError: "Erro ao excluir transação",
+    dateRangeError: "A data final deve ser maior ou igual à data inicial.",
   },
   en: {
-    online: "System online",
     addTitle: "Add",
     statementTitle: "Statement",
     addSubtitle: "Register a new expense or income.",
@@ -105,15 +105,16 @@ const transactionText = {
     createTransaction: "Create transaction",
     cancelEdit: "Cancel edit",
     filters: "Filters",
-    month: "Month",
-    year: "Year",
+    startDate: "Start date",
+    endDate: "End date",
     movement: "Movement",
     all: "All",
     allFemale: "All",
     expenses: "Expenses",
     incomes: "Income",
     status: "Status",
-    settled: "Paid/received",
+    receivedFilter: "Received",
+    paidFilter: "Paid",
     pending: "Pending",
     applyFilters: "Apply filters",
     clear: "Clear",
@@ -131,6 +132,7 @@ const transactionText = {
     saveTransactionError: "Error saving transaction",
     createCategoryError: "Error creating category",
     deleteTransactionError: "Error deleting transaction",
+    dateRangeError: "The end date must be greater than or equal to the start date.",
   },
 };
 
@@ -171,6 +173,12 @@ type TransactionsPageProps = {
   mode?: "statement" | "form";
 };
 
+type SettlementStatusFilter = "" | "received" | "paid" | "pending";
+
+type TransactionFilterState = TransactionFilters & {
+  settlementStatus: SettlementStatusFilter;
+};
+
 function getSettlementLabel(
   transaction: Transaction,
   t: (typeof transactionText)["pt"]
@@ -180,6 +188,41 @@ function getSettlementLabel(
   }
 
   return transaction.isSettled ? t.paid : t.unpaid;
+}
+
+function getRequestFilters(filters: TransactionFilterState): TransactionFilters {
+  const {
+    settlementStatus,
+    ...requestFilters
+  } = filters;
+
+  if (settlementStatus === "received") {
+    return {
+      ...requestFilters,
+      type: "INCOME",
+      isSettled: "true",
+    };
+  }
+
+  if (settlementStatus === "paid") {
+    return {
+      ...requestFilters,
+      type: "EXPENSE",
+      isSettled: "true",
+    };
+  }
+
+  if (settlementStatus === "pending") {
+    return {
+      ...requestFilters,
+      isSettled: "false",
+    };
+  }
+
+  return {
+    ...requestFilters,
+    isSettled: "",
+  };
 }
 
 export function TransactionsPage({ mode = "statement" }: TransactionsPageProps) {
@@ -204,12 +247,12 @@ export function TransactionsPage({ mode = "statement" }: TransactionsPageProps) 
   const [editingTransaction, setEditingTransaction] =
     useState<Transaction | null>(null);
 
-  const [filters, setFilters] = useState<TransactionFilters>({
-    month: "",
-    year: "",
+  const [filters, setFilters] = useState<TransactionFilterState>({
+    startDate: "",
+    endDate: "",
     type: "",
     categoryId: "",
-    isSettled: "",
+    settlementStatus: "",
     paymentMethod: "",
   });
 
@@ -230,7 +273,10 @@ export function TransactionsPage({ mode = "statement" }: TransactionsPageProps) 
     setError("");
 
     try {
-      const data = await transactionService.list(token, currentFilters);
+      const data = await transactionService.list(
+        token,
+        getRequestFilters(currentFilters)
+      );
       setTransactions(data);
     } catch (err) {
       setError(
@@ -406,16 +452,26 @@ export function TransactionsPage({ mode = "statement" }: TransactionsPageProps) 
 
   async function handleApplyFilters(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+
+    if (
+      filters.startDate &&
+      filters.endDate &&
+      filters.startDate > filters.endDate
+    ) {
+      setError(t.dateRangeError);
+      return;
+    }
+
     await loadTransactions(filters);
   }
 
   async function handleClearFilters() {
-  const emptyFilters: TransactionFilters = {
-    month: "",
-    year: "",
+  const emptyFilters: TransactionFilterState = {
+    startDate: "",
+    endDate: "",
     type: "",
     categoryId: "",
-    isSettled: "",
+    settlementStatus: "",
     paymentMethod: "",
   };
 
@@ -425,9 +481,8 @@ export function TransactionsPage({ mode = "statement" }: TransactionsPageProps) 
 
   return (
     <main className="dashboard-page">
-      <header className="dashboard-header" data-status={t.online}>
+      <header className="dashboard-header">
         <div>
-          <span className="app-badge">FinTrack</span>
           <h1>{isFormMode ? t.addTitle : t.statementTitle}</h1>
           <p>
             {isFormMode
@@ -612,33 +667,28 @@ export function TransactionsPage({ mode = "statement" }: TransactionsPageProps) 
 
           <form className="filter-form" onSubmit={handleApplyFilters}>
             <label>
-              {t.month}
+              {t.startDate}
               <input
-                type="number"
-                min="1"
-                max="12"
-                placeholder="5"
-                value={filters.month}
+                type="date"
+                value={filters.startDate}
                 onChange={(event) =>
                   setFilters((current) => ({
                     ...current,
-                    month: event.target.value,
+                    startDate: event.target.value,
                   }))
                 }
               />
             </label>
 
             <label>
-              {t.year}
+              {t.endDate}
               <input
-                type="number"
-                min="2000"
-                placeholder="2026"
-                value={filters.year}
+                type="date"
+                value={filters.endDate}
                 onChange={(event) =>
                   setFilters((current) => ({
                     ...current,
-                    year: event.target.value,
+                    endDate: event.target.value,
                   }))
                 }
               />
@@ -648,12 +698,21 @@ export function TransactionsPage({ mode = "statement" }: TransactionsPageProps) 
               {t.movement}
               <select
                 value={filters.type}
-                onChange={(event) =>
+                onChange={(event) => {
+                  const nextType = event.target.value as CategoryType | "";
+
                   setFilters((current) => ({
                     ...current,
-                    type: event.target.value as CategoryType | "",
-                  }))
-                }
+                    type: nextType,
+                    settlementStatus:
+                      (nextType === "INCOME" &&
+                        current.settlementStatus === "paid") ||
+                      (nextType === "EXPENSE" &&
+                        current.settlementStatus === "received")
+                        ? ""
+                        : current.settlementStatus,
+                  }));
+                }}
               >
                 <option value="">{t.all}</option>
                 <option value="EXPENSE">{t.expenses}</option>
@@ -685,17 +744,27 @@ export function TransactionsPage({ mode = "statement" }: TransactionsPageProps) 
             <label>
               {t.status}
               <select
-                value={filters.isSettled}
-                onChange={(event) =>
+                value={filters.settlementStatus}
+                onChange={(event) => {
+                  const settlementStatus = event.target
+                    .value as SettlementStatusFilter;
+
                   setFilters((current) => ({
                     ...current,
-                    isSettled: event.target.value as "" | "true" | "false",
-                  }))
-                }
+                    settlementStatus,
+                    type:
+                      settlementStatus === "received"
+                        ? "INCOME"
+                        : settlementStatus === "paid"
+                          ? "EXPENSE"
+                          : current.type,
+                  }));
+                }}
               >
                 <option value="">{t.all}</option>
-                <option value="true">{t.settled}</option>
-                <option value="false">{t.pending}</option>
+                <option value="received">{t.receivedFilter}</option>
+                <option value="paid">{t.paidFilter}</option>
+                <option value="pending">{t.pending}</option>
               </select>
             </label>
 
@@ -719,6 +788,8 @@ export function TransactionsPage({ mode = "statement" }: TransactionsPageProps) 
                 ))}
               </select>
             </label>
+
+            {error && <p className="form-error">{error}</p>}
 
             <div className="filter-actions">
               <button type="submit">{t.applyFilters}</button>

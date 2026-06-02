@@ -2506,7 +2506,104 @@ select:focus-visible {
     gap: 2px;
   }
 
-  .bottom-nav a small {
+.bottom-nav a small {
     font-size: 0.62rem;
   }
+}
+
+/* --- Targeted UX refinements --- */
+.auth-page {
+  background: #eef7f2;
+}
+
+.auth-page::before {
+  display: none;
+}
+
+.auth-page .app-badge,
+.auth-page .auth-card::before,
+.auth-page .auth-form button,
+.auth-page .secondary-button {
+  background: var(--accent);
+}
+
+.auth-page .auth-form button:hover,
+.auth-page .secondary-button:hover {
+  filter: brightness(0.98) saturate(1.04);
+}
+
+.auth-form input[type="date"],
+.auth-form input[type="month"],
+.filter-form input[type="date"],
+.filter-form input[type="month"] {
+  cursor: pointer;
+  color-scheme: light;
+}
+
+.auth-form input[type="date"]::-webkit-calendar-picker-indicator,
+.auth-form input[type="month"]::-webkit-calendar-picker-indicator,
+.filter-form input[type="date"]::-webkit-calendar-picker-indicator,
+.filter-form input[type="month"]::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  opacity: 0.72;
+}
+
+.auth-form input[type="date"]::-webkit-calendar-picker-indicator:hover,
+.auth-form input[type="month"]::-webkit-calendar-picker-indicator:hover,
+.filter-form input[type="date"]::-webkit-calendar-picker-indicator:hover,
+.filter-form input[type="month"]::-webkit-calendar-picker-indicator:hover {
+  opacity: 1;
+}
+
+.profile-edit-form {
+  display: grid;
+  gap: 14px;
+  margin-top: 18px;
+  padding-top: 18px;
+  border-top: 1px solid var(--line);
+}
+
+.profile-edit-form h3 {
+  margin: 0 0 4px;
+  color: var(--ink);
+  font-size: 1rem;
+}
+
+.profile-edit-form p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.profile-edit-form label {
+  display: grid;
+  gap: 8px;
+  color: var(--muted-strong);
+  font-size: 0.86rem;
+  font-weight: 850;
+}
+
+.profile-edit-form input {
+  min-height: 48px;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: #f8fbf9;
+  color: var(--ink);
+  font: inherit;
+}
+
+.profile-edit-form input:focus {
+  border-color: var(--accent-strong);
+  background: #ffffff;
+  box-shadow: 0 0 0 4px rgba(95, 242, 162, 0.16);
+  outline: 0;
+}
+
+.profile-edit-form button {
+  min-height: 48px;
+  border-radius: var(--radius-sm);
+  background: linear-gradient(135deg, var(--accent), var(--accent-cyan));
+  color: #06120d;
+  font-weight: 950;
 }

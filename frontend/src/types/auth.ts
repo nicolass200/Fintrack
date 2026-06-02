@@ -20,6 +20,10 @@ export type AuthResponse = {
   user: User;
 };
 
+export type UpdateProfileData = {
+  name: string;
+};
+
 export type ResetPasswordData = {
   token: string;
   password: string;

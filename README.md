@@ -31,7 +31,7 @@ O FinTrack busca reduzir esse problema por meio de uma interface direta e adapta
 - Sessão autenticada por cookie `HttpOnly`;
 - Consulta ao usuário autenticado;
 - Recuperação de senha por e-mail com código temporário;
-- Perfil com dados básicos da conta;
+- Perfil com dados básicos da conta e edição de nome;
 - Seleção de idioma entre português e inglês;
 - Português como idioma padrão;
 - Preferência de idioma salva no navegador.
@@ -47,12 +47,12 @@ O FinTrack busca reduzir esse problema por meio de uma interface direta e adapta
 ### Transações e extrato
 
 - Cadastro de receitas e despesas;
-- Fluxos visuais separados para gasto e ganho;
+- Fluxos visuais separados para despesas e receitas;
 - Forma de pagamento opcional para despesas;
 - Conta de recebimento opcional para receitas;
 - Controle de lançamentos pagos, recebidos ou pendentes;
 - Listagem, edição e exclusão de movimentações;
-- Extrato com filtros por mês, ano, tipo, categoria, situação e forma de pagamento;
+- Extrato com filtros por intervalo de datas, tipo, categoria, situação e forma de pagamento;
 - Validação de pertencimento da categoria ao usuário autenticado.
 
 ### Dashboard
@@ -62,7 +62,7 @@ O FinTrack busca reduzir esse problema por meio de uma interface direta e adapta
 - Saldo;
 - Valores pendentes a pagar;
 - Valores pendentes a receber;
-- Gastos agrupados por categoria;
+- Despesas agrupadas por categoria;
 - Resumo mensal;
 - Últimas movimentações.
 
@@ -231,6 +231,7 @@ POST /auth/logout
 POST /auth/forgot-password
 POST /auth/reset-password
 GET  /auth/me
+PUT  /auth/me
 ```
 
 ### Categorias
@@ -255,7 +256,7 @@ DELETE /transactions/:id
 Filtros aceitos na listagem:
 
 ```http
-GET /transactions?month=5&year=2026&type=EXPENSE&categoryId=UUID&isSettled=false&paymentMethod=Pix
+GET /transactions?startDate=2026-04-12&endDate=2026-04-15&type=EXPENSE&categoryId=UUID&isSettled=false&paymentMethod=Pix
 ```
 
 Exemplo de criação de uma despesa pendente:
@@ -532,12 +533,13 @@ npm run preview
 3. Criar uma despesa paga e outra pendente;
 4. Criar uma receita recebida e outra pendente;
 5. Criar uma nova categoria durante o cadastro de transação;
-6. Verificar filtros no extrato;
+6. Verificar filtros por intervalo de datas no extrato;
 7. Conferir saldo, pendências e últimas movimentações no dashboard;
 8. Criar um orçamento e verificar os alertas;
 9. Solicitar redefinição de senha e testar o código enviado pela Brevo;
-10. Alterar o idioma no perfil e recarregar a página;
-11. Conferir a navegação em desktop e em dispositivo móvel.
+10. Editar o nome no perfil;
+11. Alterar o idioma no perfil e recarregar a página;
+12. Conferir a navegação em desktop e em dispositivo móvel.
 
 As rotas protegidas funcionam com cookie autenticado. Para testar a API manualmente, também é possível enviar o token:
 
@@ -556,12 +558,13 @@ Authorization: Bearer SEU_TOKEN_AQUI
 - [x] CRUD de categorias;
 - [x] Categorias padrão para novos usuários;
 - [x] CRUD de transações com dados adicionais;
-- [x] Extrato com filtros;
+- [x] Extrato com filtros por intervalo de datas;
 - [x] Dashboard financeiro;
 - [x] Orçamentos mensais e alertas;
 - [x] Frontend integrado;
 - [x] Layout responsivo e navegação mobile;
 - [x] Recuperação de senha por e-mail com Brevo;
+- [x] Edição de nome no perfil;
 - [x] Seleção de idioma no perfil;
 - [x] Preparação para deploy no Render e na Vercel;
 

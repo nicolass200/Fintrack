@@ -49,6 +49,23 @@ export class AuthController {
     return response.status(200).json(user);
   }
 
+  async updateMe(request: AuthenticatedRequest, response: Response) {
+    const userId = request.userId;
+
+    if (!userId) {
+      return response.status(401).json({
+        message: "Usuario nao autenticado",
+      });
+    }
+
+    const user = await authService.updateProfile({
+      userId,
+      name: request.body.name,
+    });
+
+    return response.status(200).json(user);
+  }
+
   async forgotPassword(request: Request, response: Response) {
     const { email } = request.body;
     const result = await authService.forgotPassword(email);

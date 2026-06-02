@@ -143,7 +143,6 @@ export function CategoriesPage() {
     <main className="dashboard-page">
       <header className="dashboard-header">
         <div>
-          <span className="app-badge">FinTrack</span>
           <h1>Categorias</h1>
           <p>Gerencie categorias de receitas e despesas.</p>
         </div>

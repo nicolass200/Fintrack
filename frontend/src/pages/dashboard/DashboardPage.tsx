@@ -6,7 +6,6 @@ import type { DashboardSummary } from "../../types/dashboard";
 
 const dashboardText = {
   pt: {
-    online: "Sistema online",
     title: "Dashboard",
     welcome: "Bem-vindo",
     loading: "Carregando resumo financeiro...",
@@ -14,12 +13,12 @@ const dashboardText = {
     income: "Receitas",
     expense: "Despesas",
     balance: "Saldo",
-    registeredIncome: "Entradas registradas",
-    registeredExpense: "Saídas registradas",
-    positiveFlow: "Fluxo positivo",
-    negativeFlow: "Fluxo negativo",
-    pendingExpense: "A pagar",
-    pendingIncome: "A receber",
+    registeredIncome: "Receitas registradas",
+    registeredExpense: "Despesas registradas",
+    positiveBalance: "Saldo positivo",
+    negativeBalance: "Saldo negativo",
+    pendingExpense: "Despesas a pagar",
+    pendingIncome: "Receitas a receber",
     pendingExpenses: "Despesas pendentes",
     pendingIncomes: "Receitas pendentes",
     expensesByCategory: "Despesas por categoria",
@@ -28,17 +27,16 @@ const dashboardText = {
     noTransactions: "Nenhum lançamento financeiro cadastrado ainda.",
     monthlyPerformance: "Desempenho mensal",
     monthlySummary: "Resumo mensal",
-    gains: "Ganhos",
-    expenses: "Gastos",
-    incomeType: "Ganho",
-    expenseType: "Gasto",
+    gains: "Receitas",
+    expenses: "Despesas",
+    incomeType: "Receita",
+    expenseType: "Despesa",
     received: "Recebido",
     receivable: "A receber",
     paid: "Pago",
     payable: "A pagar",
   },
   en: {
-    online: "System online",
     title: "Dashboard",
     welcome: "Welcome",
     loading: "Loading financial summary...",
@@ -48,10 +46,10 @@ const dashboardText = {
     balance: "Balance",
     registeredIncome: "Registered inflows",
     registeredExpense: "Registered outflows",
-    positiveFlow: "Positive flow",
-    negativeFlow: "Negative flow",
-    pendingExpense: "To pay",
-    pendingIncome: "To receive",
+    positiveBalance: "Positive balance",
+    negativeBalance: "Negative balance",
+    pendingExpense: "Expenses to pay",
+    pendingIncome: "Income to receive",
     pendingExpenses: "Pending expenses",
     pendingIncomes: "Pending income",
     expensesByCategory: "Expenses by category",
@@ -237,9 +235,8 @@ export function DashboardPage() {
 
   return (
     <main className="dashboard-page">
-      <header className="dashboard-header" data-status={t.online}>
+      <header className="dashboard-header">
         <div>
-          <span className="app-badge">FinTrack</span>
           <h1>{t.title}</h1>
           <p>
             {t.welcome}, {user?.name}.
@@ -278,7 +275,7 @@ export function DashboardPage() {
               <span>{t.balance}</span>
               <strong>{formatCurrency(summary.balance, language)}</strong>
               <small className={`balance-status ${getBalanceStatus(summary.balance)}`}>
-                {summary.balance >= 0 ? t.positiveFlow : t.negativeFlow}
+                {summary.balance >= 0 ? t.positiveBalance : t.negativeBalance}
               </small>
             </article>
           </section>

@@ -12,19 +12,20 @@ exports.transactionRepository = {
         });
     },
     async findMany(filters) {
+        const dateFilter = {};
+        if (filters.startDate) {
+            dateFilter.gte = filters.startDate;
+        }
+        if (filters.endDate) {
+            dateFilter.lt = filters.endDate;
+        }
         const where = {
             userId: filters.userId,
             ...(filters.type && { type: filters.type }),
             ...(filters.categoryId && { categoryId: filters.categoryId }),
             ...(filters.isSettled !== undefined && { isSettled: filters.isSettled }),
             ...(filters.paymentMethod && { paymentMethod: filters.paymentMethod }),
-            ...(filters.startDate &&
-                filters.endDate && {
-                date: {
-                    gte: filters.startDate,
-                    lt: filters.endDate,
-                },
-            }),
+            ...(Object.keys(dateFilter).length > 0 && { date: dateFilter }),
         };
         return prisma_1.prisma.transaction.findMany({
             where,

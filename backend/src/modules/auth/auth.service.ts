@@ -25,6 +25,11 @@ interface ResetPasswordRequest {
   password: string;
 }
 
+interface UpdateProfileRequest {
+  userId: string;
+  name: string;
+}
+
 function generateToken(userId: string) {
   const secret = process.env.JWT_SECRET;
 
@@ -188,5 +193,22 @@ export class AuthService {
     return {
       message: "Senha atualizada com sucesso.",
     };
+  }
+
+  async updateProfile({ userId, name }: UpdateProfileRequest) {
+    const user = await prisma.user.update({
+      where: { id: userId },
+      data: {
+        name: name.trim(),
+      },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        createdAt: true,
+      },
+    });
+
+    return user;
   }
 }

@@ -41,6 +41,8 @@ export type UpdateTransactionData = {
 export type TransactionFilters = {
   month?: string;
   year?: string;
+  startDate?: string;
+  endDate?: string;
   type?: CategoryType | "";
   categoryId?: string;
   isSettled?: "" | "true" | "false";

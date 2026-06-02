@@ -30,6 +30,29 @@ function getMonthDateRange(month?: number, year?: number) {
   };
 }
 
+function getDateRange(query: ListTransactionsQuery) {
+  if (!query.startDate && !query.endDate) {
+    return getMonthDateRange(query.month, query.year);
+  }
+
+  const range: {
+    startDate?: Date;
+    endDate?: Date;
+  } = {};
+
+  if (query.startDate) {
+    range.startDate = new Date(query.startDate);
+  }
+
+  if (query.endDate) {
+    const endDate = new Date(query.endDate);
+    endDate.setUTCDate(endDate.getUTCDate() + 1);
+    range.endDate = endDate;
+  }
+
+  return range;
+}
+
 async function validateCategory(
   categoryId: string,
   userId: string,
@@ -76,7 +99,7 @@ export const transactionService = {
   },
 
   async list(userId: string, query: ListTransactionsQuery) {
-    const { startDate, endDate } = getMonthDateRange(query.month, query.year);
+    const { startDate, endDate } = getDateRange(query);
 
     return transactionRepository.findMany({
       userId,

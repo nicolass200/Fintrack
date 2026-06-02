@@ -3,6 +3,7 @@ import type {
   LoginData,
   RegisterData,
   ResetPasswordData,
+  UpdateProfileData,
   User,
 } from "../types/auth";
 import { apiClient } from "./apiClient";
@@ -25,6 +26,13 @@ export const authService = {
   me() {
     return apiClient<User>("/auth/me", {
       method: "GET",
+    });
+  },
+
+  updateProfile(data: UpdateProfileData) {
+    return apiClient<User>("/auth/me", {
+      method: "PUT",
+      body: data,
     });
   },
 

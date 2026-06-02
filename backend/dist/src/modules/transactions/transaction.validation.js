@@ -15,6 +15,12 @@ const optionalBooleanQuerySchema = zod_1.z
     }
     return value === "true";
 });
+const optionalDateQuerySchema = zod_1.z
+    .string()
+    .optional()
+    .refine((value) => value === undefined || !Number.isNaN(Date.parse(value)), {
+    message: "Data invalida",
+});
 exports.createTransactionSchema = zod_1.z.object({
     body: zod_1.z.object({
         description: zod_1.z
@@ -98,6 +104,8 @@ exports.listTransactionsSchema = zod_1.z.object({
             .refine((value) => value === undefined || value >= 2000, {
             message: "Ano invalido",
         }),
+        startDate: optionalDateQuerySchema,
+        endDate: optionalDateQuerySchema,
         type: transactionTypeSchema.optional(),
         categoryId: zod_1.z.string().uuid("Categoria invalida").optional(),
         isSettled: optionalBooleanQuerySchema,

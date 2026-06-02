@@ -36,4 +36,5 @@ authRoutes.post("/login", loginRateLimit, (0, validateRequest_1.validateRequest)
 authRoutes.post("/forgot-password", passwordResetRateLimit, (0, validateRequest_1.validateRequest)(auth_validation_1.forgotPasswordValidation), authController.forgotPassword);
 authRoutes.post("/reset-password", passwordResetRateLimit, (0, validateRequest_1.validateRequest)(auth_validation_1.resetPasswordValidation), authController.resetPassword);
 authRoutes.get("/me", authMiddleware_1.authMiddleware, authController.me);
+authRoutes.put("/me", authMiddleware_1.authMiddleware, (0, validateRequest_1.validateRequest)(auth_validation_1.updateProfileValidation), authController.updateMe);
 authRoutes.post("/logout", authMiddleware_1.authMiddleware, authController.logout);

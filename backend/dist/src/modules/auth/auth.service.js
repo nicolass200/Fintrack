@@ -144,5 +144,20 @@ class AuthService {
             message: "Senha atualizada com sucesso.",
         };
     }
+    async updateProfile({ userId, name }) {
+        const user = await prisma_1.prisma.user.update({
+            where: { id: userId },
+            data: {
+                name: name.trim(),
+            },
+            select: {
+                id: true,
+                name: true,
+                email: true,
+                createdAt: true,
+            },
+        });
+        return user;
+    }
 }
 exports.AuthService = AuthService;

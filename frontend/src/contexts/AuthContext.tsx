@@ -2,7 +2,12 @@ import { useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import { COOKIE_AUTH_MARKER } from "../api/apiClient";
 import { authService } from "../api/authService";
-import type { LoginData, RegisterData, User } from "../types/auth";
+import type {
+  LoginData,
+  RegisterData,
+  UpdateProfileData,
+  User,
+} from "../types/auth";
 import { AuthContext } from "./authContext";
 
 type AuthProviderProps = {
@@ -60,6 +65,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
     setToken(COOKIE_AUTH_MARKER);
   }
 
+  async function updateProfile(data: UpdateProfileData) {
+    const updatedUser = await authService.updateProfile(data);
+    setUser(updatedUser);
+  }
+
   async function logout() {
     try {
       await authService.logout();
@@ -79,6 +89,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       isLoading,
       login,
       register,
+      updateProfile,
       logout,
     }),
     [user, token, isLoading]

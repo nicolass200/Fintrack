@@ -8,6 +8,7 @@ import {
   loginValidation,
   registerValidation,
   resetPasswordValidation,
+  updateProfileValidation,
 } from "./auth.validation";
 
 const authRoutes = Router();
@@ -61,6 +62,12 @@ authRoutes.post(
 );
 
 authRoutes.get("/me", authMiddleware, authController.me);
+authRoutes.put(
+  "/me",
+  authMiddleware,
+  validateRequest(updateProfileValidation),
+  authController.updateMe
+);
 authRoutes.post("/logout", authMiddleware, authController.logout);
 
 export { authRoutes };
